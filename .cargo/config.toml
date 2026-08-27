@@ -1,0 +1,6 @@
+# The repo lives inside OneDrive. Rust's target/ dir reaches several GB and
+# contains hundreds of thousands of files - syncing it would wreck both the
+# sync client and the quota. Redirect it to a local-only path.
+# Machine-specific by design; change the path if you clone this elsewhere.
+[build]
+target-dir = "C:/Users/prajw/AppData/Local/prepos-rust-target"

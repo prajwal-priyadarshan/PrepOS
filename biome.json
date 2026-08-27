@@ -1,0 +1,40 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.10/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "includes": ["**", "!**/dist", "!**/src-tauri/gen", "!**/node_modules"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "nursery": {
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "@tauri-apps/plugin-fs": "Disk access belongs behind VaultAdapter. Import from src/vault/ instead.",
+              "@tauri-apps/plugin-dialog": "Disk access belongs behind VaultAdapter. Import from src/vault/ instead.",
+              "pdfjs-dist": "Import { pdfjs } from 'react-pdf' - a second copy of pdf.js causes a worker version mismatch."
+            }
+          }
+        }
+      }
+    }
+  },
+  "javascript": {
+    "formatter": { "quoteStyle": "single", "semicolons": "always" }
+  },
+  "overrides": [
+    {
+      "includes": ["src/vault/**"],
+      "linter": { "rules": { "nursery": { "noRestrictedImports": "off" } } }
+    }
+  ]
+}
