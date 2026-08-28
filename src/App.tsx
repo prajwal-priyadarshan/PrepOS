@@ -6,6 +6,7 @@ import { SaveSessionModal } from './features/reader/SaveSessionModal';
 import { TimerHud } from './features/reader/TimerHud';
 import { useSessionTimer } from './features/reader/useSessionTimer';
 import { CameraSpike } from './features/recorder/CameraSpike';
+import { ThemeToggle } from './features/settings/ThemeToggle';
 import { AddPdfs } from './features/vault/AddPdfs';
 import { ConnectScreen } from './features/vault/ConnectScreen';
 import { FileTree } from './features/vault/FileTree';
@@ -15,6 +16,7 @@ import { studyDay } from './lib/studyDay';
 import { installFlushHandlers, useProgress } from './store/useProgress';
 import { useQuickNote } from './store/useQuickNote';
 import { useSession } from './store/useSession';
+import { installThemeWatcher } from './store/useTheme';
 import { useVault } from './store/useVault';
 
 export default function App() {
@@ -39,7 +41,12 @@ export default function App() {
 
   useEffect(() => {
     void restore();
-    return installFlushHandlers();
+    const stopFlush = installFlushHandlers();
+    const stopTheme = installThemeWatcher();
+    return () => {
+      stopFlush();
+      stopTheme();
+    };
   }, [restore]);
 
   // state.json lives inside the vault, so it can only be read once one is open.
@@ -69,12 +76,7 @@ export default function App() {
   return (
     <div className="flex h-screen flex-col bg-paper text-ink">
       <header className="flex items-center justify-between gap-6 border-b border-graphite/20 px-5 py-3">
-        <div className="flex min-w-0 items-baseline gap-4">
-          <h1 className="font-display text-lg font-semibold tracking-tight">PrepOS</h1>
-          <span className="truncate text-xs text-graphite" title={root ?? ''}>
-            {root}
-          </span>
-        </div>
+        <h1 className="font-display text-lg font-semibold tracking-tight">PrepOS</h1>
         <div className="flex shrink-0 items-center gap-5">
           <TimerHud />
           <button
@@ -99,6 +101,7 @@ export default function App() {
             <span className="tabular text-ink">{daysToExam()}</span> days to CAT
           </span>
           <span className="tabular text-xs text-graphite">{studyDay(new Date())}</span>
+          <ThemeToggle />
         </div>
       </header>
 
@@ -159,6 +162,7 @@ export default function App() {
 
                 <section className="rounded-md border border-graphite/20 bg-surface p-4">
                   <h2 className="font-display text-sm font-semibold">Vault</h2>
+                  <p className="tabular mt-2 break-all text-xs text-graphite">{root}</p>
                   <button
                     type="button"
                     onClick={disconnect}

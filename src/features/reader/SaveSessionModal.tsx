@@ -54,7 +54,7 @@ export function SaveSessionModal() {
   const fileName = pending.filePath.split('/').at(-1);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-scrim/50 p-6">
       <form
         onSubmit={onSubmit}
         className="w-full max-w-sm rounded-lg border border-graphite/20 bg-surface p-5"

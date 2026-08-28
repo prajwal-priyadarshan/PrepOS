@@ -10,6 +10,10 @@
   --color-flag: #d66a72;
   --color-surface: #ffffff;
 
+  /* Modal backdrop. Its own token rather than ink/40, because ink and paper
+     trade places in the dark theme and a backdrop must stay dark in both. */
+  --color-scrim: #161a2c;
+
   /* Three type roles, no more.
      Display: screen titles and big numbers only.
      Body:    everything prose.
@@ -18,6 +22,36 @@
   --font-display: "Bricolage Grotesque Variable", system-ui, sans-serif;
   --font-body: "Public Sans Variable", system-ui, sans-serif;
   --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+}
+
+/* The same six roles at night, not a second design.
+ *
+ * ink and paper swap ends of the scale rather than gaining dark-mode variants,
+ * so every `bg-ink text-paper` in the app - the selected file, the primary
+ * button - keeps meaning "inverted" without a single dark: utility anywhere.
+ *
+ * Defined once, under the resolved theme only: src/main.tsx stamps data-theme
+ * before first paint and useTheme keeps it in step, so 'system' has already
+ * become light or dark by the time this is read. That is what makes one
+ * definition site safe.
+ */
+:root[data-theme="dark"] {
+  --color-paper: #0f1220;
+  --color-ink: #e9ebf2;
+  --color-graphite: #939bb1;
+  --color-marker: #cdea4f;
+  --color-flag: #e58a91;
+  --color-surface: #191d2c;
+  --color-scrim: #05070e;
+}
+
+/* Native chrome the app does not draw: scrollbars, the popup a <select> opens,
+   the caret. Without this they stay light against a dark window. */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 @layer base {

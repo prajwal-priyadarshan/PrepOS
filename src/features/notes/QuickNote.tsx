@@ -45,7 +45,7 @@ export function QuickNote() {
     filePath === null ? null : { filePath, ...(page !== undefined ? { page } : {}) };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-start justify-center bg-ink/40 p-6 pt-24">
+    <div className="fixed inset-0 z-40 flex items-start justify-center bg-scrim/50 p-6 pt-24">
       <div className="w-full max-w-md rounded-lg border border-graphite/20 bg-surface p-5">
         <h2 className="font-display text-base font-semibold">Quick note</h2>
         <p className="mt-1 text-xs text-graphite">

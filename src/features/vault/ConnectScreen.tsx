@@ -1,5 +1,6 @@
 import { daysToExam, EXAM_DAY } from '@/lib/exam';
 import { useVault } from '@/store/useVault';
+import { ThemeToggle } from '../settings/ThemeToggle';
 
 export function ConnectScreen() {
   const connect = useVault((s) => s.connect);
@@ -33,10 +34,13 @@ export function ConnectScreen() {
           </p>
         )}
 
-        <p className="mt-8 border-t border-graphite/20 pt-4 text-xs text-graphite">
-          <span className="tabular">{remaining}</span> days to CAT &middot;{' '}
-          <span className="tabular">{EXAM_DAY}</span>
-        </p>
+        <div className="mt-8 flex items-baseline justify-between border-t border-graphite/20 pt-4">
+          <p className="text-xs text-graphite">
+            <span className="tabular">{remaining}</span> days to CAT &middot;{' '}
+            <span className="tabular">{EXAM_DAY}</span>
+          </p>
+          <ThemeToggle />
+        </div>
       </div>
     </main>
   );

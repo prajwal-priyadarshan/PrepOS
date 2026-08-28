@@ -4,6 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PrepOS</title>
+    <script>
+      /* Stamp the theme before the first paint.
+       *
+       * Anything later - main.tsx, a React effect - is one frame too late, and
+       * that frame is a white flash in a dark room every single launch. Kept
+       * inline and duplicated from src/lib/theme.ts on purpose: an import here
+       * would be a network round trip, which is the thing being avoided. */
+      (() => {
+        let saved = null;
+        try {
+          saved = localStorage.getItem('prepos.theme');
+        } catch {
+          /* Storage can be unavailable. The system preference is a fine answer. */
+        }
+        const choice =
+          saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
+        const dark =
+          choice === 'dark' ||
+          (choice === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
