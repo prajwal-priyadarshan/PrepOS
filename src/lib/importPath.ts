@@ -59,8 +59,12 @@ export function flattenDirs(nodes: readonly TreeNode[]): string[] {
   return out;
 }
 
-/** How a destination folder is labelled in the picker. */
-export function dirLabel(path: string): string {
+/** How a destination folder is labelled in the picker, relative to its prep. */
+export function dirLabel(path: string, prepFolder = ''): string {
+  if (path === prepFolder) return prepFolder === '' ? '/ (vault root)' : '/ (prep root)';
+  if (prepFolder !== '' && path.startsWith(`${prepFolder}/`)) {
+    return path.slice(prepFolder.length + 1);
+  }
   return path === '' ? '/ (vault root)' : path;
 }
 

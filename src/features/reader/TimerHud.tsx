@@ -12,9 +12,14 @@ export function TimerHud() {
 
   if (filePath === null) return null;
 
-  const counting = !paused && !windowHidden && isCounting(clock, Date.now());
+  // An external session is running in another window by definition, so the
+  // hidden flag says nothing about it.
+  const external = clock.external;
+  const counting = !paused && (external || (!windowHidden && isCounting(clock, Date.now())));
+
   let state = 'idle';
   if (paused) state = 'paused';
+  else if (external) state = 'external';
   else if (windowHidden) state = 'away';
   else if (counting) state = 'counting';
 

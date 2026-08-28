@@ -1,7 +1,8 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react';
-import { SECTIONS, type Section } from '@/lib/model';
+import { GENERAL_SECTION, type Section } from '@/lib/model';
 import { formatDuration } from '@/lib/sessionClock';
 import { useSession } from '@/store/useSession';
+import { usePrepSections } from '../preps/usePreps';
 
 const digitsOnly = (value: string) => value.replace(/[^0-9]/g, '');
 
@@ -17,7 +18,8 @@ export function SaveSessionModal() {
   const commit = useSession((s) => s.commit);
   const discard = useSession((s) => s.discard);
 
-  const [section, setSection] = useState<Section>('GENERAL');
+  const sections = usePrepSections();
+  const [section, setSection] = useState<Section>(GENERAL_SECTION);
   const [attempted, setAttempted] = useState('');
   const [correct, setCorrect] = useState('');
   const [note, setNote] = useState('');
@@ -75,9 +77,11 @@ export function SaveSessionModal() {
           onChange={(e) => setSection(e.target.value as Section)}
           className="mt-1 w-full rounded border border-graphite/30 bg-surface px-2 py-1.5 text-sm"
         >
-          {SECTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s}
+          {/* The section the file sits in may not be one of the prep's folders
+              any more - keep it selectable rather than silently rewriting it. */}
+          {(sections.includes(section) ? sections : [section, ...sections]).map((name) => (
+            <option key={name} value={name}>
+              {name}
             </option>
           ))}
         </select>

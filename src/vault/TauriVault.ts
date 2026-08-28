@@ -13,6 +13,7 @@ import {
   writeFile,
   writeTextFile,
 } from '@tauri-apps/plugin-fs';
+import { openPath } from '@tauri-apps/plugin-opener';
 import {
   type AppendHandle,
   type FileStat,
@@ -201,6 +202,10 @@ export class TauriVault implements VaultAdapter {
     // The dialog pick granted read scope on the source; the vault root grant
     // covers the destination. Neither path needs a scope call of its own.
     await copyFile(sourceAbsolutePath, this.#abs(destPath));
+  }
+
+  async openExternally(path: string): Promise<void> {
+    await openPath(this.#abs(path));
   }
 
   exists(path: string): Promise<boolean> {

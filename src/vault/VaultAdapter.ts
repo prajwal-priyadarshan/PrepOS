@@ -78,6 +78,13 @@ export interface VaultAdapter {
   pickFiles(options?: PickFilesOptions): Promise<string[]>;
   /** Copy an absolute outside path to a vault-relative one. */
   importFile(sourceAbsolutePath: string, destPath: string): Promise<void>;
+  /**
+   * Hand a file to whatever the OS opens it with.
+   *
+   * For material the in-app reader cannot render - .pptx, .docx - which is
+   * everything that is not a PDF, and always will be: the reader is pdf.js.
+   */
+  openExternally(path: string): Promise<void>;
 
   exists(path: string): Promise<boolean>;
   mkdirp(path: string): Promise<void>;

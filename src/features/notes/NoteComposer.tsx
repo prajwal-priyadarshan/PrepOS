@@ -1,6 +1,7 @@
 import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react';
-import { createNote, SECTIONS, type Section, sectionForPath } from '@/lib/model';
+import { createNote, GENERAL_SECTION, type Section, sectionForPath } from '@/lib/model';
 import { useProgress } from '@/store/useProgress';
+import { useActivePrep, usePrepSections } from '../preps/usePreps';
 
 export interface NoteContext {
   filePath: string;
@@ -24,7 +25,12 @@ interface Props {
  */
 export function NoteComposer({ context, autoFocus = false, onSaved, onCancel }: Props) {
   const addNote = useProgress((s) => s.addNote);
-  const defaultSection: Section = context ? sectionForPath(context.filePath) : 'GENERAL';
+  const activePrepId = useProgress((s) => s.state.activePrepId);
+  const prep = useActivePrep();
+  const sections = usePrepSections();
+  const defaultSection: Section = context
+    ? sectionForPath(context.filePath, prep?.folder ?? '')
+    : GENERAL_SECTION;
 
   const [body, setBody] = useState('');
   const [section, setSection] = useState<Section>(defaultSection);
@@ -46,6 +52,7 @@ export function NoteComposer({ context, autoFocus = false, onSaved, onCancel }: 
       createNote({
         body: trimmed,
         section,
+        prepId: activePrepId,
         ...(context ? { filePath: context.filePath } : {}),
         ...(context?.page !== undefined ? { page: context.page } : {}),
       }),
@@ -96,9 +103,9 @@ export function NoteComposer({ context, autoFocus = false, onSaved, onCancel }: 
             onChange={(e) => setSection(e.target.value as Section)}
             className="rounded border border-graphite/30 bg-surface px-2 py-1 text-xs"
           >
-            {SECTIONS.map((s) => (
-              <option key={s} value={s}>
-                {s}
+            {sections.map((name) => (
+              <option key={name} value={name}>
+                {name}
               </option>
             ))}
           </select>

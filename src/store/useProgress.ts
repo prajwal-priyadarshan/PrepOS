@@ -5,6 +5,7 @@ import {
   emptyState,
   type MockResult,
   type NoteEntry,
+  type Prep,
   type ReadingEntry,
   type Recording,
   type StudySession,
@@ -39,6 +40,12 @@ interface ProgressState {
   addReading: (entry: ReadingEntry) => void;
   addNote: (note: NoteEntry) => void;
   removeNote: (id: string) => void;
+
+  addPrep: (prep: Prep) => void;
+  updatePrep: (id: string, fields: Partial<Omit<Prep, 'id'>>) => void;
+  setActivePrep: (id: string) => void;
+  /** Forgets the prep, never its records - they stay, tagged and countable. */
+  removePrep: (id: string) => void;
   addError: (entry: ErrorEntry) => void;
   addMock: (mock: MockResult) => void;
   addRecording: (recording: Recording) => void;
@@ -92,6 +99,43 @@ export const useProgress = create<ProgressState>((set, get) => {
     removeNote(id) {
       const state = get().state;
       commit({ ...state, notes: state.notes.filter((n) => n.id !== id) });
+    },
+
+    addPrep(prep) {
+      const state = get().state;
+      commit({ ...state, preps: [...state.preps, prep], activePrepId: prep.id });
+    },
+
+    updatePrep(id, fields) {
+      const state = get().state;
+      commit({
+        ...state,
+        preps: state.preps.map((prep) => (prep.id === id ? { ...prep, ...fields } : prep)),
+      });
+    },
+
+    setActivePrep(id) {
+      const state = get().state;
+      if (state.activePrepId === id) return;
+      if (!state.preps.some((prep) => prep.id === id)) return;
+      commit({ ...state, activePrepId: id });
+    },
+
+    /**
+     * Deleting a prep deletes a label, not a history: the hours are still real
+     * and still count toward the overall streak. They simply stop being
+     * attributable, which is better than silently erasing a month of work.
+     */
+    removePrep(id) {
+      const state = get().state;
+      const remaining = state.preps.filter((prep) => prep.id !== id);
+      if (remaining.length === 0) return;
+      commit({
+        ...state,
+        preps: remaining,
+        activePrepId:
+          state.activePrepId === id ? (remaining[0]?.id ?? state.activePrepId) : state.activePrepId,
+      });
     },
 
     addError(entry) {

@@ -19,6 +19,8 @@ interface VaultState {
   toggleExpanded: (path: string) => void;
   /** Prompt for PDFs and copy them into `destDir`. Returns how many landed. */
   importPdfs: (destDir: string) => Promise<number>;
+  /** Create a folder if it is not there yet. Used when a prep is created. */
+  ensureFolder: (path: string) => Promise<boolean>;
 }
 
 function message(err: unknown): string {
@@ -114,6 +116,18 @@ export const useVault = create<VaultState>((set, get) => ({
       await get().refresh();
     }
     return added;
+  },
+
+  async ensureFolder(path) {
+    if (!vault.isConnected() || path === '') return true;
+    try {
+      if (!(await vault.exists(path))) await vault.mkdirp(path);
+      await get().refresh();
+      return true;
+    } catch (err) {
+      set({ error: message(err) });
+      return false;
+    }
   },
 
   toggleExpanded(path) {

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { newId, type Section, type StudySession, sectionForPath } from '@/lib/model';
+import { activePrepOf } from '@/lib/preps';
 import {
   activeSeconds,
   advance,
@@ -16,6 +17,7 @@ import { useProgress } from './useProgress';
 /** What the save modal needs to know once the timer stops. */
 export interface PendingSave {
   filePath: string;
+  prepId: string;
   section: Section;
   startedAt: string;
   activeSeconds: number;
@@ -31,7 +33,7 @@ interface SessionState {
   capNotified: boolean;
   pending: PendingSave | null;
 
-  start: (filePath: string) => void;
+  start: (filePath: string, external?: boolean) => void;
   stop: () => void;
   discard: () => void;
   commit: (fields: { attempted: number; correct: number; note?: string; section: Section }) => void;
@@ -45,9 +47,13 @@ interface SessionState {
 const now = () => Date.now();
 
 export const useSession = create<SessionState>((set, get) => {
-  /** Clock counts only when neither manually paused nor window-hidden. */
+  /**
+   * Clock counts only when neither manually paused nor window-hidden - except
+   * for an external session, where our window being behind PowerPoint is the
+   * normal case and says nothing about whether work is happening.
+   */
   const syncHidden = (clock: ClockState, paused: boolean, windowHidden: boolean, at: number) =>
-    onVisibility(clock, paused || windowHidden, at);
+    onVisibility(clock, clock.external ? paused : paused || windowHidden, at);
 
   return {
     filePath: null,
@@ -58,12 +64,16 @@ export const useSession = create<SessionState>((set, get) => {
     capNotified: false,
     pending: null,
 
-    start(filePath) {
+    start(filePath, external = false) {
+      // Opening something new while a session runs ends that one properly
+      // rather than discarding its minutes.
+      if (get().filePath !== null && get().filePath !== filePath) get().stop();
+
       const at = now();
       set({
         filePath,
         startedAt: new Date(at).toISOString(),
-        clock: createClock(at),
+        clock: createClock(at, external),
         paused: false,
         capNotified: false,
         pending: null,
@@ -81,10 +91,16 @@ export const useSession = create<SessionState>((set, get) => {
       // Under a minute is a misclick, not a study session worth logging.
       if (seconds < 60) return;
 
+      // The prep is read when the session ends, not when it starts: switching
+      // prep mid-session means the hours belong to what you ended up doing.
+      const state = useProgress.getState().state;
+      const prep = activePrepOf(state);
+
       set({
         pending: {
           filePath,
-          section: sectionForPath(filePath),
+          prepId: state.activePrepId,
+          section: sectionForPath(filePath, prep?.folder ?? ''),
           startedAt,
           activeSeconds: seconds,
         },
@@ -101,6 +117,7 @@ export const useSession = create<SessionState>((set, get) => {
 
       const session: StudySession = {
         id: newId(),
+        prepId: pending.prepId,
         studyDay: studyDay(new Date(pending.startedAt)),
         startedAt: pending.startedAt,
         activeSeconds: pending.activeSeconds,

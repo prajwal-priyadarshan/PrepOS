@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
 import { NotesPanel } from './features/notes/NotesPanel';
 import { QuickNote } from './features/notes/QuickNote';
+import { PrepSwitcher } from './features/preps/PrepSwitcher';
+import { usePrepTree } from './features/preps/usePreps';
+import { ExternalFile } from './features/reader/ExternalFile';
 import { Reader } from './features/reader/Reader';
 import { SaveSessionModal } from './features/reader/SaveSessionModal';
 import { TimerHud } from './features/reader/TimerHud';
 import { useSessionTimer } from './features/reader/useSessionTimer';
 import { CameraSpike } from './features/recorder/CameraSpike';
 import { ThemeToggle } from './features/settings/ThemeToggle';
+import { StatsPanel } from './features/stats/StatsPanel';
 import { AddPdfs } from './features/vault/AddPdfs';
 import { ConnectScreen } from './features/vault/ConnectScreen';
 import { FileTree } from './features/vault/FileTree';
-import { daysToExam } from './lib/exam';
-import { sectionForPath } from './lib/model';
 import { studyDay } from './lib/studyDay';
 import { installFlushHandlers, useProgress } from './store/useProgress';
 import { useQuickNote } from './store/useQuickNote';
@@ -22,7 +24,6 @@ import { useVault } from './store/useVault';
 export default function App() {
   const status = useVault((s) => s.status);
   const root = useVault((s) => s.root);
-  const tree = useVault((s) => s.tree);
   const error = useVault((s) => s.error);
   const restore = useVault((s) => s.restore);
   const refresh = useVault((s) => s.refresh);
@@ -33,6 +34,7 @@ export default function App() {
   const sessionCount = useProgress((s) => s.state.sessions.length);
   const noteCount = useProgress((s) => s.state.notes.length);
   const showQuickNote = useQuickNote((s) => s.show);
+  const prepTree = usePrepTree();
 
   const [selected, setSelected] = useState<string | null>(null);
   const openPdf = selected?.toLowerCase().endsWith('.pdf') === true ? selected : null;
@@ -76,7 +78,10 @@ export default function App() {
   return (
     <div className="flex h-screen flex-col bg-paper text-ink">
       <header className="flex items-center justify-between gap-6 border-b border-graphite/20 px-5 py-3">
-        <h1 className="font-display text-lg font-semibold tracking-tight">PrepOS</h1>
+        <div className="flex min-w-0 items-center gap-4">
+          <h1 className="font-display text-lg font-semibold tracking-tight">PrepOS</h1>
+          <PrepSwitcher />
+        </div>
         <div className="flex shrink-0 items-center gap-5">
           <TimerHud />
           <button
@@ -97,9 +102,6 @@ export default function App() {
               </span>
             </>
           )}
-          <span className="text-xs text-graphite">
-            <span className="tabular text-ink">{daysToExam()}</span> days to CAT
-          </span>
           <span className="tabular text-xs text-graphite">{studyDay(new Date())}</span>
           <ThemeToggle />
         </div>
@@ -120,7 +122,7 @@ export default function App() {
             </button>
           </div>
           <nav className="min-h-0 flex-1 overflow-y-auto px-1 pb-3">
-            <FileTree nodes={tree} onOpenFile={setSelected} selectedPath={selected} />
+            <FileTree nodes={prepTree} onOpenFile={setSelected} selectedPath={selected} />
           </nav>
           <AddPdfs />
         </aside>
@@ -136,25 +138,20 @@ export default function App() {
                 </p>
               )}
               <div className="max-w-2xl space-y-5">
-                <section className="rounded-md border border-graphite/20 bg-surface p-4">
-                  <h2 className="font-display text-sm font-semibold">
-                    {selected ? 'Not a PDF' : 'Nothing open'}
-                  </h2>
-                  {selected ? (
-                    <>
-                      <p className="tabular mt-2 break-all text-sm">{selected}</p>
-                      <p className="mt-1 text-xs text-graphite">
-                        Section <span className="tabular text-ink">{sectionForPath(selected)}</span>
-                        <span> - the reader handles PDFs only.</span>
-                      </p>
-                    </>
-                  ) : (
+                {selected !== null ? (
+                  <ExternalFile filePath={selected} />
+                ) : (
+                  <section className="rounded-md border border-graphite/20 bg-surface p-4">
+                    <h2 className="font-display text-sm font-semibold">Nothing open</h2>
                     <p className="mt-2 text-sm text-graphite">
                       Open a PDF from the tree. It reopens on the page you left, and the timer
-                      starts on its own.
+                      starts on its own. Slides and documents open in their own app, timed only if
+                      you ask.
                     </p>
-                  )}
-                </section>
+                  </section>
+                )}
+
+                <StatsPanel />
 
                 <NotesPanel />
 

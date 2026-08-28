@@ -1,4 +1,4 @@
-import { daysToExam, EXAM_DAY } from '@/lib/exam';
+import { daysToTarget, EXAM_DAY } from '@/lib/exam';
 import { useVault } from '@/store/useVault';
 import { ThemeToggle } from '../settings/ThemeToggle';
 
@@ -6,7 +6,7 @@ export function ConnectScreen() {
   const connect = useVault((s) => s.connect);
   const status = useVault((s) => s.status);
   const error = useVault((s) => s.error);
-  const remaining = daysToExam();
+  const remaining = daysToTarget(EXAM_DAY);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-paper px-6 text-ink">

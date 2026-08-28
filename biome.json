@@ -1,6 +1,10 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.10/schema.json",
-  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
   "files": {
     "includes": ["**", "!**/dist", "!**/src-tauri/gen", "!**/node_modules"]
   },
@@ -11,7 +15,9 @@
     "lineWidth": 100
   },
   "css": {
-    "parser": { "tailwindDirectives": true }
+    "parser": {
+      "tailwindDirectives": true
+    }
   },
   "linter": {
     "enabled": true,
@@ -24,7 +30,8 @@
             "paths": {
               "@tauri-apps/plugin-fs": "Disk access belongs behind VaultAdapter. Import from src/vault/ instead.",
               "@tauri-apps/plugin-dialog": "Disk access belongs behind VaultAdapter. Import from src/vault/ instead.",
-              "pdfjs-dist": "Import { pdfjs } from 'react-pdf' - a second copy of pdf.js causes a worker version mismatch."
+              "pdfjs-dist": "Import { pdfjs } from 'react-pdf' - a second copy of pdf.js causes a worker version mismatch.",
+              "@tauri-apps/plugin-opener": "Disk access belongs behind VaultAdapter. Import from src/vault/ instead."
             }
           }
         }
@@ -32,16 +39,31 @@
     }
   },
   "javascript": {
-    "formatter": { "quoteStyle": "single", "semicolons": "always" }
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "always"
+    }
   },
   "overrides": [
     {
       "includes": ["src/vault/**"],
-      "linter": { "rules": { "style": { "noRestrictedImports": "off" } } }
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
+          }
+        }
+      }
     },
     {
       "includes": ["src/styles/**"],
-      "linter": { "rules": { "complexity": { "noImportantStyles": "off" } } }
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
+          }
+        }
+      }
     }
   ]
 }

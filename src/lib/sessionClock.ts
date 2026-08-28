@@ -21,20 +21,36 @@ export interface ClockState {
   lastCountedAt: number;
   lastActivityAt: number;
   hidden: boolean;
+  /**
+   * The work is happening in another application - PowerPoint, Word, a browser.
+   *
+   * Neither the visibility rule nor the idle rule can observe that: our window
+   * is behind theirs and receives no events, so both would read genuine study
+   * as away. An external session suspends them and runs until it is ended by
+   * hand. The three-hour cap is the only guard left, which is why this is opt
+   * in per file rather than the default.
+   */
+  external: boolean;
 }
 
-export function createClock(now: number): ClockState {
-  return { activeMs: 0, lastCountedAt: now, lastActivityAt: now, hidden: false };
+export function createClock(now: number, external = false): ClockState {
+  return { activeMs: 0, lastCountedAt: now, lastActivityAt: now, hidden: false, external };
 }
 
-/** Bring accounting up to `now`, crediting only visible, non-idle time. */
+/**
+ * Bring accounting up to `now`, crediting only visible, non-idle time - or,
+ * for an external session, everything that is not explicitly paused.
+ */
 export function advance(state: ClockState, now: number): ClockState {
   if (now <= state.lastCountedAt) return state;
 
   let countedUntil: number;
   if (state.hidden) {
-    // Tabbed away or minimised - none of this is study time.
+    // Explicitly paused, or tabbed away - none of this is study time. Still
+    // honoured for an external session: pause has to mean pause.
     countedUntil = state.lastCountedAt;
+  } else if (state.external) {
+    countedUntil = now;
   } else {
     // Credit up to the moment idleness began, and no further.
     const idleFrom = state.lastActivityAt + IDLE_MS;
@@ -63,6 +79,7 @@ export function onVisibility(state: ClockState, hidden: boolean, now: number): C
 }
 
 export function isIdle(state: ClockState, now: number): boolean {
+  if (state.external) return false;
   return !state.hidden && now - state.lastActivityAt >= IDLE_MS;
 }
 

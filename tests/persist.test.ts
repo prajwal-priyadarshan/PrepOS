@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { type AppState, emptyState, newId } from '../src/lib/model';
+import {
+  type AppState,
+  CURRENT_VERSION,
+  DEFAULT_PREP_ID,
+  emptyState,
+  newId,
+} from '../src/lib/model';
 import {
   BACKUPS_KEPT,
   backupNameFor,
@@ -17,6 +23,7 @@ function populated(): AppState {
   const state = emptyState();
   state.sessions.push({
     id: newId(),
+    prepId: DEFAULT_PREP_ID,
     studyDay: '2026-08-27',
     startedAt: '2026-08-27T18:30:00.000Z',
     activeSeconds: 2700,
@@ -27,6 +34,7 @@ function populated(): AppState {
   });
   state.reading.push({
     id: newId(),
+    prepId: DEFAULT_PREP_ID,
     studyDay: '2026-08-27',
     source: 'Aeon',
     title: 'On boredom',
@@ -35,6 +43,7 @@ function populated(): AppState {
   });
   state.errors.push({
     id: newId(),
+    prepId: DEFAULT_PREP_ID,
     studyDay: '2026-08-27',
     section: 'QA',
     topic: 'Time and work',
@@ -86,9 +95,9 @@ describe('migrate', () => {
   });
 
   it('stamps the current version regardless of input', () => {
-    expect(migrate({ version: 99 }).version).toBe(1);
-    expect(migrate(null).version).toBe(1);
-    expect(migrate('garbage').version).toBe(1);
+    expect(migrate({ version: 99 }).version).toBe(CURRENT_VERSION);
+    expect(migrate(null).version).toBe(CURRENT_VERSION);
+    expect(migrate('garbage').version).toBe(CURRENT_VERSION);
   });
 
   it('opens rather than crashes on a truncated file', () => {
@@ -209,5 +218,93 @@ describe('StatePersister', () => {
     const copies = vault.ops.filter((o) => o.startsWith('copy'));
     expect(copies).toHaveLength(2);
     expect(copies[1]).toContain('state-2026-08-28.json');
+  });
+});
+
+describe('migrate onto preps', () => {
+  /** State exactly as a vault written before preps existed would hold it. */
+  const legacy = {
+    version: 1,
+    sessions: [
+      {
+        id: 'a',
+        studyDay: '2026-08-27',
+        startedAt: '2026-08-27T18:30:00.000Z',
+        activeSeconds: 2700,
+        section: 'QA',
+      },
+    ],
+    notes: [{ id: 'n', studyDay: '2026-08-27', createdAt: 'x', section: 'QA', body: 'keep' }],
+    lastPage: { 'QA/x.pdf': 12 },
+  };
+
+  it('seeds the prep that the whole vault used to be', () => {
+    const state = migrate(legacy);
+
+    expect(state.preps).toHaveLength(1);
+    expect(state.preps[0]?.id).toBe(DEFAULT_PREP_ID);
+    expect(state.preps[0]?.folder).toBe('');
+    expect(state.activePrepId).toBe(DEFAULT_PREP_ID);
+  });
+
+  it('backfills every old record onto that prep', () => {
+    const state = migrate(legacy);
+
+    expect(state.sessions[0]?.prepId).toBe(DEFAULT_PREP_ID);
+    expect(state.notes[0]?.prepId).toBe(DEFAULT_PREP_ID);
+    // Nothing else about the record is touched.
+    expect(state.sessions[0]?.activeSeconds).toBe(2700);
+    expect(state.notes[0]?.body).toBe('keep');
+    expect(state.lastPage).toEqual({ 'QA/x.pdf': 12 });
+  });
+
+  it('leaves records that already name a prep alone', () => {
+    const state = migrate({
+      ...legacy,
+      preps: [{ id: 'dbms', name: 'DBMS', folder: 'DBMS' }],
+      sessions: [{ ...legacy.sessions[0], prepId: 'dbms' }],
+    });
+
+    expect(state.sessions[0]?.prepId).toBe('dbms');
+  });
+
+  it('keeps preps that are already there rather than re-seeding', () => {
+    const preps = [
+      { id: 'cat', name: 'CAT', folder: '' },
+      { id: 'dbms', name: 'DBMS', folder: 'DBMS' },
+    ];
+    const state = migrate({ ...legacy, preps, activePrepId: 'dbms' });
+
+    expect(state.preps).toEqual(preps);
+    expect(state.activePrepId).toBe('dbms');
+    // Untagged records belong to the first prep, not to whichever was active.
+    expect(state.sessions[0]?.prepId).toBe('cat');
+  });
+
+  it('falls back to a real prep when the active id is stale', () => {
+    const state = migrate({ ...legacy, preps: [{ id: 'cat', name: 'CAT', folder: '' }] });
+    expect(state.activePrepId).toBe('cat');
+
+    const gone = migrate({
+      ...legacy,
+      preps: [{ id: 'cat', name: 'CAT', folder: '' }],
+      activePrepId: 'deleted',
+    });
+    expect(gone.activePrepId).toBe('cat');
+  });
+
+  it('discards malformed preps instead of trusting them', () => {
+    const state = migrate({
+      ...legacy,
+      preps: [{ id: 'ok', name: 'Fine', folder: '' }, { name: 'no id' }, null, 'prep'],
+    });
+
+    expect(state.preps).toHaveLength(1);
+    expect(state.preps[0]?.id).toBe('ok');
+  });
+
+  it('is idempotent', () => {
+    const once = migrate(legacy);
+    expect(migrate(once)).toEqual(once);
   });
 });

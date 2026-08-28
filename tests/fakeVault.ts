@@ -101,6 +101,11 @@ export class FakeVault implements VaultAdapter {
     return Promise.resolve();
   }
 
+  openExternally(path: string): Promise<void> {
+    this.ops.push(`open ${path}`);
+    return Promise.resolve();
+  }
+
   exists(path: string): Promise<boolean> {
     return Promise.resolve(this.files.has(path) || this.dirs.has(path));
   }

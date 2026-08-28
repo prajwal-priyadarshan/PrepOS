@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { dirLabel, flattenDirs } from '@/lib/importPath';
+import { dirLabel } from '@/lib/importPath';
 import { useVault } from '@/store/useVault';
+import { useActivePrep, usePrepDestinations } from '../preps/usePreps';
 
 /**
  * Bringing new material in without leaving the app.
@@ -10,16 +11,19 @@ import { useVault } from '@/store/useVault';
  * here would quietly mis-file months of work.
  */
 export function AddPdfs() {
-  const tree = useVault((s) => s.tree);
   const importing = useVault((s) => s.importing);
   const importPdfs = useVault((s) => s.importPdfs);
+  const prep = useActivePrep();
+  // Only folders inside the active prep: material for next month's endsem has
+  // no business landing in the CAT tree because a stale option was selected.
+  const dirs = usePrepDestinations();
 
-  const dirs = flattenDirs(tree);
   const [dest, setDest] = useState('');
   const [lastAdded, setLastAdded] = useState<number | null>(null);
 
-  // A folder can vanish between renders - deleted outside the app, or a refresh.
-  const value = dirs.includes(dest) ? dest : '';
+  // Falls back to the prep's own folder - the option that is always present -
+  // when the chosen one is gone, or the prep was switched under it.
+  const value = dirs.includes(dest) ? dest : (dirs[0] ?? '');
 
   const run = async () => {
     setLastAdded(null);
@@ -32,7 +36,7 @@ export function AddPdfs() {
         htmlFor="import-dest"
         className="block text-[11px] font-medium uppercase tracking-widest text-graphite"
       >
-        Add PDFs
+        Add PDFs {prep && <span className="normal-case tracking-normal">to {prep.name}</span>}
       </label>
       <select
         id="import-dest"
@@ -42,7 +46,7 @@ export function AddPdfs() {
       >
         {dirs.map((dir) => (
           <option key={dir} value={dir}>
-            {dirLabel(dir)}
+            {dirLabel(dir, prep?.folder ?? '')}
           </option>
         ))}
       </select>

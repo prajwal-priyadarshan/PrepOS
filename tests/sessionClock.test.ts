@@ -123,3 +123,60 @@ describe('formatDuration', () => {
     expect(formatDuration(-5000)).toBe('0m 00s');
   });
 });
+
+describe('external sessions', () => {
+  const START = 1_000_000;
+  const MINUTE = 60_000;
+
+  it('counts time our window cannot see', () => {
+    // PowerPoint is in front, so not one pointer event reaches us for half an
+    // hour. useSession keeps that off the clock for an external session -
+    // hidden stays reserved for an explicit pause - so it all counts.
+    let clock = createClock(START, true);
+    clock = advance(clock, START + 30 * MINUTE);
+
+    expect(activeSeconds(clock)).toBe(30 * 60);
+  });
+
+  it('is the difference between crediting half an hour and crediting 90s', () => {
+    const ordinary = advance(createClock(START), START + 30 * MINUTE);
+    const external = advance(createClock(START, true), START + 30 * MINUTE);
+
+    expect(activeSeconds(ordinary)).toBe(IDLE_MS / 1000);
+    expect(activeSeconds(external)).toBe(30 * 60);
+  });
+
+  it('ignores the idle rule', () => {
+    let clock = createClock(START, true);
+    clock = advance(clock, START + 10 * IDLE_MS);
+
+    expect(isIdle(clock, START + 10 * IDLE_MS)).toBe(false);
+    expect(isCounting(clock, START + 10 * IDLE_MS)).toBe(true);
+    expect(activeSeconds(clock)).toBe((10 * IDLE_MS) / 1000);
+  });
+
+  it('still stops dead when explicitly paused', () => {
+    let clock = createClock(START, true);
+    clock = advance(clock, START + 5 * MINUTE);
+    // hidden is what an explicit pause sets, external or not.
+    clock = onVisibility(clock, true, START + 5 * MINUTE);
+    clock = advance(clock, START + 60 * MINUTE);
+
+    expect(activeSeconds(clock)).toBe(5 * 60);
+  });
+
+  it('still hits the three-hour cap', () => {
+    let clock = createClock(START, true);
+    clock = advance(clock, START + MAX_SESSION_MS);
+
+    expect(hasHitCap(clock)).toBe(true);
+  });
+
+  it('leaves an ordinary session counting exactly as before', () => {
+    let clock = createClock(START);
+    clock = onVisibility(clock, true, START + MINUTE);
+    clock = advance(clock, START + 30 * MINUTE);
+
+    expect(activeSeconds(clock)).toBe(60);
+  });
+});

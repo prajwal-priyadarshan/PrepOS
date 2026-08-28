@@ -1,6 +1,14 @@
 import type { VaultAdapter } from '@/vault/VaultAdapter';
 import { BACKUP_DIR, STATE_PATH } from '@/vault/VaultAdapter';
-import { type AppState, CURRENT_VERSION, emptyState } from './model';
+import {
+  type AppState,
+  CURRENT_VERSION,
+  DEFAULT_PREP_ID,
+  defaultPrep,
+  emptyState,
+  isPrep,
+  type Prep,
+} from './model';
 import { studyDay } from './studyDay';
 
 /** Keep two weeks of daily snapshots. Ten lines that save a year of data. */
@@ -40,19 +48,44 @@ export function migrate(data: unknown): AppState {
     }
   }
 
+  // A vault written before preps existed had exactly one, unnamed: the vault
+  // itself. Seeding it here, with a fixed id, is what lets every record from
+  // then still belong somewhere.
+  const preps: Prep[] = asArray<unknown>(raw.preps).filter(isPrep);
+  const seeded = preps.length > 0 ? preps : [defaultPrep()];
+  const fallbackPrepId = seeded[0]?.id ?? DEFAULT_PREP_ID;
+  const activePrepId =
+    typeof raw.activePrepId === 'string' && seeded.some((p) => p.id === raw.activePrepId)
+      ? raw.activePrepId
+      : fallbackPrepId;
+
   return {
     version: CURRENT_VERSION,
-    sessions: asArray(raw.sessions),
-    reading: asArray(raw.reading),
-    notes: asArray(raw.notes),
-    errors: asArray(raw.errors),
-    mocks: asArray(raw.mocks),
-    recordings: asArray(raw.recordings),
+    preps: seeded,
+    activePrepId,
+    sessions: tagged(asArray(raw.sessions), fallbackPrepId),
+    reading: tagged(asArray(raw.reading), fallbackPrepId),
+    notes: tagged(asArray(raw.notes), fallbackPrepId),
+    errors: tagged(asArray(raw.errors), fallbackPrepId),
+    mocks: tagged(asArray(raw.mocks), fallbackPrepId),
+    recordings: tagged(asArray(raw.recordings), fallbackPrepId),
     lastPage,
     streakFreezesUsed: asArray<string>(raw.streakFreezesUsed).filter(
       (d): d is string => typeof d === 'string',
     ),
   };
+}
+
+/**
+ * Stamp untagged records with the prep they must have come from.
+ *
+ * prepId goes first so a record that already carries one keeps it - this runs
+ * on every load, not just the one that introduced preps.
+ */
+function tagged<T>(items: T[], prepId: string): T[] {
+  return items.map((item) =>
+    typeof item === 'object' && item !== null ? ({ prepId, ...item } as T) : item,
+  );
 }
 
 export function deserialise(raw: string): AppState {

@@ -19,6 +19,10 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_persisted_scope::init())
+        // Hands a .pptx or .docx to whatever Windows opens it with. The reader
+        // is pdf.js and always will be; this is the honest alternative to
+        // pretending it can render Office files.
+        .plugin(tauri_plugin_opener::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
