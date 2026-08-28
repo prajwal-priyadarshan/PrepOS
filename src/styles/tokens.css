@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 /* Palette (plan S7): cool paper and highlighter, grounded in OMR sheets and
    sectional clocks. Deliberately not the warm-cream-and-terracotta default. */
@@ -15,9 +15,9 @@
      Body:    everything prose.
      Data:    every timer, percentile and count - tabular figures are not a
               style choice here, proportional digits jitter as they change. */
-  --font-display: 'Bricolage Grotesque Variable', system-ui, sans-serif;
-  --font-body: 'Public Sans Variable', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+  --font-display: "Bricolage Grotesque Variable", system-ui, sans-serif;
+  --font-body: "Public Sans Variable", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
 }
 
 @layer base {

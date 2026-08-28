@@ -16,6 +16,26 @@ export default defineConfig({
     },
   },
 
+  // Pre-bundle these up front. Left to discovery, Vite finds them on first
+  // import mid-session, re-optimises and reloads - and during that reload a
+  // dep can bind to React's CJS build while react-dom is already ESM, which
+  // surfaces as a bogus "Invalid hook call".
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-dom/client',
+      'zustand',
+      'date-fns',
+      'recharts',
+      'react-pdf',
+      '@tauri-apps/api',
+      '@tauri-apps/plugin-fs',
+      '@tauri-apps/plugin-dialog',
+      '@tauri-apps/plugin-store',
+    ],
+  },
+
   // Tauri expects a fixed port and should not have Rust errors scrolled away.
   clearScreen: false,
   server: {
