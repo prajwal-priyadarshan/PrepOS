@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { NoteEntry } from '@/lib/model';
 import { useProgress } from '@/store/useProgress';
+import { useActivePrep } from '../preps/usePreps';
 import { NoteComposer } from './NoteComposer';
 
 const INITIAL_SHOWN = 8;
@@ -20,9 +21,13 @@ function newestFirst(notes: readonly NoteEntry[]): NoteEntry[] {
 export function NotesPanel() {
   const notes = useProgress((s) => s.state.notes);
   const removeNote = useProgress((s) => s.removeNote);
+  const prep = useActivePrep();
   const [showAll, setShowAll] = useState(false);
 
-  const ordered = newestFirst(notes);
+  // Scoped to the prep you're inside - a note from another prep showing up
+  // here would be exactly the leak the workspace is meant not to have.
+  const own = prep === null ? notes : notes.filter((n) => n.prepId === prep.id);
+  const ordered = newestFirst(own);
   const shown = showAll ? ordered : ordered.slice(0, INITIAL_SHOWN);
 
   return (
@@ -30,7 +35,7 @@ export function NotesPanel() {
       <div className="flex items-baseline justify-between gap-4">
         <h3 className="m-0 text-lg font-semibold">Notes</h3>
         <span className="kicker whitespace-nowrap">
-          <span className="tabular">{notes.length}</span> kept &middot; press n anywhere
+          <span className="tabular">{own.length}</span> kept &middot; press n anywhere
         </span>
       </div>
 

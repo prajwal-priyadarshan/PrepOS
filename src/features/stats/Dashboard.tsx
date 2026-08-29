@@ -1,10 +1,14 @@
 import { useMemo, useState } from 'react';
 import { countdown } from '@/lib/deadline';
-import { formatAccuracy, formatHours, type Summary, summarise } from '@/lib/stats';
+import type { Prep } from '@/lib/model';
+import { formatAccuracy, formatHours, type Summary, sessionsFor, summarise } from '@/lib/stats';
+import { secondsByDay } from '@/lib/streak';
 import { studyDay } from '@/lib/studyDay';
 import { useProgress } from '@/store/useProgress';
+import { useVault } from '@/store/useVault';
 import { PrepDialog } from '../preps/PrepDialog';
 import { useActivePrep, usePreps } from '../preps/usePreps';
+import { Heatmap } from './Heatmap';
 
 /**
  * A figure and what it counts.
@@ -38,23 +42,22 @@ function Figure({
 }
 
 interface PrepRowProps {
-  name: string;
-  active: boolean;
-  targetDate?: string;
+  prep: Prep;
+  lastOpened: boolean;
   summary: Summary;
-  onSelect: () => void;
+  onStudy: () => void;
   onEdit: () => void;
 }
 
 /**
- * One prep, one line.
+ * One prep, one line, and the row is the way in.
  *
- * The row is also the switcher - there is no separate control for choosing
- * which prep is active, because choosing one and reading how it is going are
- * the same intent.
+ * There is no separate "select" step: this dashboard is the only place a prep
+ * can be entered from, so clicking through to it and starting today's sitting
+ * are the same click.
  */
-function PrepRow({ name, active, targetDate, summary, onSelect, onEdit }: PrepRowProps) {
-  const remaining = targetDate === undefined ? null : countdown(targetDate);
+function PrepRow({ prep, lastOpened, summary, onStudy, onEdit }: PrepRowProps) {
+  const remaining = prep.targetDate === undefined ? null : countdown(prep.targetDate);
 
   return (
     <div className="group grid grid-cols-1 items-center gap-x-5 gap-y-1 border-t border-divider py-3.5 sm:grid-cols-[1fr_auto]">
@@ -62,15 +65,15 @@ function PrepRow({ name, active, targetDate, summary, onSelect, onEdit }: PrepRo
         <div className="flex items-baseline gap-2.5">
           <button
             type="button"
-            onClick={onSelect}
-            title={active ? undefined : `Make ${name} the active prep`}
+            onClick={onStudy}
+            title={`Open ${prep.name} and start studying`}
             className="tabular truncate text-[15px] font-semibold transition-colors hover:text-accent"
           >
-            {name}
+            {prep.name}
           </button>
-          {active && (
+          {lastOpened && (
             <span className="shrink-0 rounded-sm bg-tint px-[7px] py-[3px] text-[10px] uppercase leading-none tracking-[0.1em] text-accent">
-              Active
+              Last opened
             </span>
           )}
           <button
@@ -98,29 +101,38 @@ function PrepRow({ name, active, targetDate, summary, onSelect, onEdit }: PrepRo
   );
 }
 
+interface Props {
+  /** Enter a prep's own workspace - sets it active and switches the page. */
+  onEnterPrep: (prep: Prep) => void;
+}
+
 /**
- * The home page: the cumulative ledger, then every prep plan as its own line.
+ * The home page: every prep plan, the cumulative ledger, and the heatmap -
+ * nothing that belongs to one prep alone.
  *
  * The total is the honest answer to "am I showing up", because a fortnight on
  * interview prep is not a fortnight off. The per-prep rows are the honest
- * answer to "am I ready for this one", which the total quietly hides.
+ * answer to "am I ready for this one", which the total quietly hides. Once a
+ * prep is entered, this screen is left behind entirely - see App.tsx - so a
+ * new plan can only ever be started from here.
  */
-export function StatsPanel() {
+export function Dashboard({ onEnterPrep }: Props) {
   const state = useProgress((s) => s.state);
   const active = useActivePrep();
   const preps = usePreps();
-  const setActivePrep = useProgress((s) => s.setActivePrep);
+  const root = useVault((s) => s.root);
+  const disconnect = useVault((s) => s.disconnect);
   const today = studyDay(new Date());
   const [editing, setEditing] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
-  const { total, rows, activeSummary } = useMemo(() => {
+  const { total, rows, dailyTotals } = useMemo(() => {
     return {
       total: summarise(state, null, today),
       rows: preps.map((prep) => ({ prep, summary: summarise(state, prep.id, today) })),
-      activeSummary: active === null ? null : summarise(state, active.id, today),
+      dailyTotals: secondsByDay(sessionsFor(state, null)),
     };
-  }, [state, preps, active, today]);
+  }, [state, preps, today]);
 
   const editingPrep = editing === null ? null : (preps.find((p) => p.id === editing) ?? null);
 
@@ -140,57 +152,46 @@ export function StatsPanel() {
         </div>
       </section>
 
-      {rows.length > 0 && (
-        <section>
-          <span className="kicker">Prep plans</span>
-          <div className="mt-3 border-b border-divider">
-            {rows.map(({ prep, summary }) => (
-              <PrepRow
-                key={prep.id}
-                name={prep.name}
-                active={prep.id === active?.id}
-                summary={summary}
-                onSelect={() => setActivePrep(prep.id)}
-                onEdit={() => setEditing(prep.id)}
-                {...(prep.targetDate !== undefined ? { targetDate: prep.targetDate } : {})}
-              />
-            ))}
-            <div className="border-t border-divider py-3.5">
-              <button
-                type="button"
-                onClick={() => setCreating(true)}
-                className="text-[13.5px] text-accent transition-opacity hover:opacity-70"
-              >
-                + New prep
-              </button>
-            </div>
-          </div>
-        </section>
-      )}
+      <section>
+        <Heatmap totals={dailyTotals} today={today} />
+      </section>
 
-      {activeSummary !== null && activeSummary.sections.length > 0 && (
-        <section>
-          <span className="kicker">{active?.name} by section</span>
-          <ul className="mt-3 border-b border-divider">
-            {activeSummary.sections.map((row) => (
-              <li
-                key={row.section}
-                className="flex items-baseline justify-between gap-4 border-t border-divider py-2.5 text-[13.5px]"
-              >
-                <span className="truncate">{row.section}</span>
-                <span className="tabular shrink-0 text-[12.5px] text-muted">
-                  {formatHours(row.activeSeconds)}
-                  <span> &middot; </span>
-                  {row.sessions}
-                  {row.sessions === 1 ? ' session' : ' sessions'}
-                  <span> &middot; </span>
-                  {formatAccuracy(row.accuracy)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <section>
+        <span className="kicker">Prep plans</span>
+        <div className="mt-3 border-b border-divider">
+          {rows.map(({ prep, summary }) => (
+            <PrepRow
+              key={prep.id}
+              prep={prep}
+              lastOpened={prep.id === active?.id}
+              summary={summary}
+              onStudy={() => onEnterPrep(prep)}
+              onEdit={() => setEditing(prep.id)}
+            />
+          ))}
+          <div className="border-t border-divider py-3.5">
+            <button
+              type="button"
+              onClick={() => setCreating(true)}
+              className="text-[13.5px] text-accent transition-opacity hover:opacity-70"
+            >
+              + New prep
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h3 className="m-0 mb-1.5 text-lg font-semibold">Vault</h3>
+        <p className="tabular m-0 break-all text-xs text-muted">{root}</p>
+        <button
+          type="button"
+          onClick={disconnect}
+          className="mt-3 rounded-sm border border-divider px-[15px] py-2 text-[13.5px] transition-colors hover:bg-tint"
+        >
+          Forget this vault
+        </button>
+      </section>
 
       {editingPrep !== null && <PrepDialog prep={editingPrep} onClose={() => setEditing(null)} />}
       {creating && <PrepDialog onClose={() => setCreating(false)} />}

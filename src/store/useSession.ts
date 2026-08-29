@@ -36,7 +36,12 @@ interface SessionState {
   start: (filePath: string, external?: boolean) => void;
   stop: () => void;
   discard: () => void;
-  commit: (fields: { attempted: number; correct: number; note?: string; section: Section }) => void;
+  commit: (fields: {
+    attempted?: number;
+    correct?: number;
+    note?: string;
+    section: Section;
+  }) => void;
 
   tick: () => void;
   activity: () => void;
@@ -115,6 +120,10 @@ export const useSession = create<SessionState>((set, get) => {
       const pending = get().pending;
       if (pending === null) return;
 
+      // Neither field is required: a chapter read, a note taken, a recording
+      // made - plenty of a sitting has no question count to give it, and a
+      // session that can only be saved with one is a session people stop
+      // logging honestly.
       const session: StudySession = {
         id: newId(),
         prepId: pending.prepId,
@@ -123,8 +132,8 @@ export const useSession = create<SessionState>((set, get) => {
         activeSeconds: pending.activeSeconds,
         section,
         filePath: pending.filePath,
-        attempted,
-        correct,
+        ...(attempted !== undefined ? { attempted } : {}),
+        ...(correct !== undefined ? { correct } : {}),
         ...(note !== undefined && note.length > 0 ? { note } : {}),
       };
       useProgress.getState().addSession(session);

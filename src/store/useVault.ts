@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { importInto, PDF_EXTENSION } from '@/lib/importPath';
+import { IMPORTABLE_EXTENSIONS, importInto } from '@/lib/importPath';
 import { type TreeNode, vault } from '@/vault';
 
 export type VaultStatus = 'starting' | 'disconnected' | 'connecting' | 'connected';
@@ -17,8 +17,8 @@ interface VaultState {
   refresh: () => Promise<void>;
   disconnect: () => Promise<void>;
   toggleExpanded: (path: string) => void;
-  /** Prompt for PDFs and copy them into `destDir`. Returns how many landed. */
-  importPdfs: (destDir: string) => Promise<number>;
+  /** Prompt for PDFs or PPTs and copy them into `destDir`. Returns how many landed. */
+  importFiles: (destDir: string) => Promise<number>;
   /** Create a folder if it is not there yet. Used when a prep is created. */
   ensureFolder: (path: string) => Promise<boolean>;
 }
@@ -89,15 +89,15 @@ export const useVault = create<VaultState>((set, get) => ({
    * reads from. Names are made unique per file, so importing the same paper
    * twice never overwrites the annotated first copy.
    */
-  async importPdfs(destDir) {
+  async importFiles(destDir) {
     if (!vault.isConnected()) return 0;
     set({ error: null });
 
     let sources: string[];
     try {
       sources = await vault.pickFiles({
-        extensions: [PDF_EXTENSION],
-        title: 'Add PDFs to the vault',
+        extensions: [...IMPORTABLE_EXTENSIONS],
+        title: 'Add PDFs or PPTs to the vault',
       });
     } catch (err) {
       set({ error: message(err) });

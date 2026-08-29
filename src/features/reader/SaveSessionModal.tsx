@@ -7,11 +7,18 @@ import { usePrepSections } from '../preps/usePreps';
 const digitsOnly = (value: string) => value.replace(/[^0-9]/g, '');
 
 /**
- * Four seconds of friction, deliberately.
+ * A closing question, not a closing form.
  *
- * attempted and correct are required: they are the fields that turn a pile of
- * logged hours into an accuracy trend, and a session saved without them teaches
- * you nothing in month seven.
+ * Attempted and correct are what turn a pile of logged hours into an accuracy
+ * trend - worth asking for. But a sitting is not always about questions: a
+ * chapter read, a note taken, a recording made all end here too, and a modal
+ * that refuses to save until two numbers are filled in teaches people to
+ * either invent them or stop logging the sitting at all. Left blank, the
+ * session saves as active time and nothing else - still real, still counted
+ * in the hours and the streak, just silent on accuracy.
+ *
+ * The one rule that survives: fill in one and the other has to follow. A lone
+ * "attempted" or a lone "correct" is not a number, it is half of one.
  */
 export function SaveSessionModal() {
   const pending = useSession((s) => s.pending);
@@ -37,18 +44,20 @@ export function SaveSessionModal() {
 
   if (pending === null) return null;
 
+  const attemptedGiven = attempted !== '';
+  const correctGiven = correct !== '';
+  const bothGiven = attemptedGiven && correctGiven;
   const attemptedNum = Number(attempted);
   const correctNum = Number(correct);
-  const filled = attempted !== '' && correct !== '';
-  const valid = filled && correctNum <= attemptedNum;
+  const partial = attemptedGiven !== correctGiven;
+  const valid = !partial && (!bothGiven || correctNum <= attemptedNum);
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!valid) return;
     commit({
-      attempted: attemptedNum,
-      correct: correctNum,
       section,
+      ...(bothGiven ? { attempted: attemptedNum, correct: correctNum } : {}),
       ...(note.trim().length > 0 ? { note: note.trim() } : {}),
     });
   };
@@ -86,36 +95,47 @@ export function SaveSessionModal() {
           ))}
         </select>
 
-        <div className="mt-4 grid grid-cols-2 gap-4">
+        <span className="kicker mt-4 block">Questions (optional)</span>
+        <div className="mt-2 grid grid-cols-2 gap-4">
           <div>
-            <label className="kicker block" htmlFor="attempted">
+            <label className="sr-only" htmlFor="attempted">
               Attempted
             </label>
             <input
               id="attempted"
               ref={firstFieldRef}
               inputMode="numeric"
+              placeholder="Attempted"
               value={attempted}
               onChange={(e) => setAttempted(digitsOnly(e.target.value))}
-              className="tabular mt-2 w-full rounded-sm border border-divider bg-surface px-[13px] py-2 text-sm"
+              className="tabular w-full rounded-sm border border-divider bg-surface px-[13px] py-2 text-sm placeholder:text-muted"
             />
           </div>
           <div>
-            <label className="kicker block" htmlFor="correct">
+            <label className="sr-only" htmlFor="correct">
               Correct
             </label>
             <input
               id="correct"
               inputMode="numeric"
+              placeholder="Correct"
               value={correct}
               onChange={(e) => setCorrect(digitsOnly(e.target.value))}
-              className="tabular mt-2 w-full rounded-sm border border-divider bg-surface px-[13px] py-2 text-sm"
+              className="tabular w-full rounded-sm border border-divider bg-surface px-[13px] py-2 text-sm placeholder:text-muted"
             />
           </div>
         </div>
 
-        {filled && !valid && (
+        {partial ? (
+          <p className="mt-2 text-[12.5px] text-flag">Fill in both, or leave both blank.</p>
+        ) : bothGiven && !valid ? (
           <p className="mt-2 text-[12.5px] text-flag">Correct cannot exceed attempted.</p>
+        ) : (
+          !bothGiven && (
+            <p className="mt-2 text-[12.5px] text-muted">
+              Nothing to attempt today? Leave these blank - the time still counts.
+            </p>
+          )
         )}
 
         <label className="kicker mt-4 block" htmlFor="note">

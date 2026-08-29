@@ -73,5 +73,11 @@ function ThemeGlyph({ theme }: { theme: Theme }) {
 
   // Black: the same crescent as Dark, filled solid rather than outlined - one
   // press further into the same shape, not a different glyph to learn.
-  return <path d="M14 8.53A6 6 0 1 1 7.47 2 4.67 4.67 0 0 0 14 8.53z" fill="currentColor" stroke="none" />;
+  return (
+    <path
+      d="M14 8.53A6 6 0 1 1 7.47 2 4.67 4.67 0 0 0 14 8.53z"
+      fill="currentColor"
+      stroke="none"
+    />
+  );
 }

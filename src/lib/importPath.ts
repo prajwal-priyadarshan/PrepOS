@@ -70,6 +70,12 @@ export function dirLabel(path: string, prepFolder = ''): string {
 
 export const PDF_EXTENSION = 'pdf';
 
+/** Old and new PowerPoint alike - a vault holds years of both. */
+export const PRESENTATION_EXTENSIONS = ['ppt', 'pptx'] as const;
+
+/** What "Add PDFs or PPTs" offers the file picker. */
+export const IMPORTABLE_EXTENSIONS = [PDF_EXTENSION, ...PRESENTATION_EXTENSIONS];
+
 export function isPdf(path: string): boolean {
   return path.toLowerCase().endsWith(`.${PDF_EXTENSION}`);
 }
