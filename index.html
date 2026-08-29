@@ -18,12 +18,15 @@
         } catch {
           /* Storage can be unavailable. The system preference is a fine answer. */
         }
-        /* 'system', never-set and anything unrecognised all mean the same
-         * thing here: ask the OS. Only an explicit choice overrides it. */
-        const dark =
-          saved === 'dark' ||
-          (saved !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        /* An explicit 'light', 'dark' or 'black' is kept as-is. Anything else -
+         * never-set, hand edited, from an older build - falls back to the OS
+         * preference; there is no OS notion of 'black' to defer to. */
+        if (saved === 'light' || saved === 'dark' || saved === 'black') {
+          document.documentElement.dataset.theme = saved;
+        } else {
+          const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        }
       })();
     </script>
   </head>

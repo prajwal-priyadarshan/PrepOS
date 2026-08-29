@@ -79,13 +79,35 @@
   --color-scrim: #05070e;
 }
 
+/* Not a third palette - Dark with its ground dropped to true black for OLED
+   screens, where every lit pixel costs power and #191d2c is still a lit
+   pixel. Text, accent and hairlines are Dark's, unchanged, because the thing
+   being asked for is a blacker room, not a different room. */
+:root[data-theme="black"] {
+  --color-ink: #f1f0ef;
+  --color-paper: #000000;
+  --color-surface: #0d0d10;
+
+  --color-divider: rgba(241, 240, 239, 0.14);
+  --color-muted: rgba(241, 240, 239, 0.52);
+  --color-soft: rgba(241, 240, 239, 0.74);
+
+  --color-accent: #3fb6d8;
+  --color-tint: rgba(63, 182, 216, 0.14);
+  --color-on-accent: #111520;
+
+  --color-flag: #e58a91;
+  --color-scrim: #000000;
+}
+
 /* Native chrome the app does not draw: scrollbars, the popup a <select> opens,
    the caret. Without this they stay light against a dark window. */
 :root[data-theme="light"] {
   color-scheme: light;
 }
 
-:root[data-theme="dark"] {
+:root[data-theme="dark"],
+:root[data-theme="black"] {
   color-scheme: dark;
 }
 

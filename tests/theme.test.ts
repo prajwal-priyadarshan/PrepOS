@@ -1,55 +1,36 @@
 import { describe, expect, it } from 'vitest';
-import {
-  isTheme,
-  nextTheme,
-  readTheme,
-  resolveTheme,
-  THEMES,
-  type Theme,
-  themeLabel,
-} from '../src/lib/theme';
+import { isTheme, nextTheme, readTheme, THEMES, type Theme, themeLabel } from '../src/lib/theme';
 
 describe('readTheme', () => {
   it('keeps a stored theme', () => {
-    expect(readTheme('dark')).toBe('dark');
-    expect(readTheme('light')).toBe('light');
-    expect(readTheme('system')).toBe('system');
+    expect(readTheme('dark', false)).toBe('dark');
+    expect(readTheme('light', true)).toBe('light');
+    expect(readTheme('black', false)).toBe('black');
   });
 
-  it('starts on system for anything else', () => {
-    expect(readTheme(null)).toBe('system');
-    expect(readTheme('')).toBe('system');
-    expect(readTheme('Dark')).toBe('system');
-    expect(readTheme(1)).toBe('system');
+  it('falls back to the OS preference for anything else', () => {
+    expect(readTheme(null, true)).toBe('dark');
+    expect(readTheme(null, false)).toBe('light');
+    expect(readTheme('', true)).toBe('dark');
+    expect(readTheme('system', false)).toBe('light');
+    expect(readTheme(1, true)).toBe('dark');
   });
 });
 
 describe('isTheme', () => {
   it('accepts exactly the three themes', () => {
     for (const theme of THEMES) expect(isTheme(theme)).toBe(true);
+    expect(isTheme('system')).toBe(false);
     expect(isTheme('Dark')).toBe(false);
-    expect(isTheme('auto')).toBe(false);
     expect(isTheme(undefined)).toBe(false);
   });
 });
 
-describe('resolveTheme', () => {
-  it('passes an explicit choice through, whatever the OS says', () => {
-    expect(resolveTheme('light', true)).toBe('light');
-    expect(resolveTheme('dark', false)).toBe('dark');
-  });
-
-  it('defers to the OS only for system', () => {
-    expect(resolveTheme('system', true)).toBe('dark');
-    expect(resolveTheme('system', false)).toBe('light');
-  });
-});
-
 describe('nextTheme', () => {
-  it('cycles light, dark, system', () => {
+  it('cycles light, dark, black', () => {
     expect(nextTheme('light')).toBe('dark');
-    expect(nextTheme('dark')).toBe('system');
-    expect(nextTheme('system')).toBe('light');
+    expect(nextTheme('dark')).toBe('black');
+    expect(nextTheme('black')).toBe('light');
   });
 
   it('returns to where it started in one lap', () => {
@@ -65,6 +46,6 @@ describe('themeLabel', () => {
   it('names each theme', () => {
     expect(themeLabel('light')).toBe('Light');
     expect(themeLabel('dark')).toBe('Dark');
-    expect(themeLabel('system')).toBe('System');
+    expect(themeLabel('black')).toBe('Black');
   });
 });
