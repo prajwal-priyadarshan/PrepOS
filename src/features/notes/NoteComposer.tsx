@@ -21,7 +21,9 @@ interface Props {
  *
  * Nothing here is required except the body. A note that costs a decision about
  * topic or tags before it can be written is a note that does not get written at
- * eleven at night, which makes the field worse than useless.
+ * eleven at night, which makes the field worse than useless - which is why the
+ * section sits under the field as a plain machine string rather than as a
+ * labelled control demanding an answer first.
  */
 export function NoteComposer({ context, autoFocus = false, onSaved, onCancel }: Props) {
   const addNote = useProgress((s) => s.addNote);
@@ -82,41 +84,41 @@ export function NoteComposer({ context, autoFocus = false, onSaved, onCancel }: 
         value={body}
         onChange={(e) => setBody(e.target.value)}
         onKeyDown={onKeyDown}
-        rows={3}
         placeholder="What is worth remembering?"
-        className="w-full resize-y rounded border border-graphite/30 bg-surface px-2 py-1.5 text-sm leading-relaxed"
+        className="mt-3 min-h-[82px] w-full resize-y rounded-sm border border-divider bg-surface px-[13px] py-3 text-sm leading-[1.55] text-ink"
       />
 
       {context && (
-        <p className="mt-1 truncate text-[11px] text-graphite" title={context.filePath}>
-          on <span className="tabular text-ink">{context.filePath.split('/').at(-1)}</span>
-          {context.page !== undefined && <span className="tabular"> p.{context.page}</span>}
+        <p className="tabular mt-1.5 truncate text-[11.5px] text-muted" title={context.filePath}>
+          on {context.filePath.split('/').at(-1)}
+          {context.page !== undefined && <span> p.{context.page}</span>}
         </p>
       )}
 
-      <div className="mt-2 flex items-center justify-between gap-3">
-        <label className="flex items-center gap-2 text-xs text-graphite" htmlFor="note-section">
-          Section
-          <select
-            id="note-section"
-            value={section}
-            onChange={(e) => setSection(e.target.value as Section)}
-            className="rounded border border-graphite/30 bg-surface px-2 py-1 text-xs"
-          >
-            {sections.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className="mt-3 flex items-center justify-between gap-4">
+        {/* Styled down to the machine string it is. The design prints the
+            section as a mono label; making that label the control itself is
+            what keeps a required decision from looking like one. */}
+        <select
+          value={section}
+          onChange={(e) => setSection(e.target.value as Section)}
+          aria-label="Section"
+          title="Which section this note belongs to"
+          className="tabular -ml-1 max-w-40 cursor-pointer truncate rounded-sm border-0 bg-transparent px-1 py-0.5 text-[11.5px] uppercase text-muted transition-colors hover:text-accent"
+        >
+          {sections.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-4">
           {onCancel && (
             <button
               type="button"
               onClick={onCancel}
-              className="text-xs text-graphite underline-offset-2 hover:underline"
+              className="text-[13.5px] text-muted transition-colors hover:text-accent"
             >
               Cancel
             </button>
@@ -125,7 +127,7 @@ export function NoteComposer({ context, autoFocus = false, onSaved, onCancel }: 
             type="submit"
             disabled={trimmed.length === 0}
             title="Ctrl+Enter"
-            className="rounded bg-ink px-3 py-1.5 text-xs font-medium text-paper disabled:opacity-40"
+            className="rounded-sm bg-accent px-[15px] py-2 text-[13.5px] text-on-accent transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             Save note
           </button>

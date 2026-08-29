@@ -19,7 +19,6 @@ import { NewFolder } from './features/vault/NewFolder';
 import { summarise } from './lib/stats';
 import { studyDay } from './lib/studyDay';
 import { installFlushHandlers, useProgress } from './store/useProgress';
-import { useQuickNote } from './store/useQuickNote';
 import { useSession } from './store/useSession';
 import { useVault } from './store/useVault';
 import type { TreeNode } from './vault';
@@ -51,13 +50,13 @@ export default function App() {
   const root = useVault((s) => s.root);
   const error = useVault((s) => s.error);
   const restore = useVault((s) => s.restore);
+  const refresh = useVault((s) => s.refresh);
   const disconnect = useVault((s) => s.disconnect);
 
   const loadProgress = useProgress((s) => s.load);
   const progressLoaded = useProgress((s) => s.loaded);
   const state = useProgress((s) => s.state);
   const prepCount = state.preps.length;
-  const showQuickNote = useQuickNote((s) => s.show);
   const prepTree = usePrepTree();
   const prep = useActivePrep();
 
@@ -162,7 +161,11 @@ export default function App() {
 
         <div className="flex items-center justify-between gap-6 py-[7px]">
           <nav className="flex items-center gap-5">
-            <button type="button" onClick={() => setView('overview')} className={tab(view === 'overview')}>
+            <button
+              type="button"
+              onClick={() => setView('overview')}
+              className={tab(view === 'overview')}
+            >
               Overview
             </button>
             <button
@@ -199,19 +202,30 @@ export default function App() {
       ) : (
         <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="grid grid-cols-1 gap-x-[56px] gap-y-10 px-[34px] pb-10 pt-[30px] min-[900px]:grid-cols-[230px_1fr]">
-            <aside className="flex flex-col gap-[22px]">
-              <div className="min-h-0">
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="kicker">Vault</span>
-                  <NewFolder />
-                </div>
-                <nav className="mt-3.5">
-                  <FileTree nodes={prepTree} onOpenFile={openFile} selectedPath={selected} />
-                </nav>
-                <p className="mt-3.5 text-[12.5px] text-muted">
-                  Click a file to open the timed reader.
-                </p>
+            <aside className="flex flex-col">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="kicker">Vault</span>
+                <button
+                  type="button"
+                  onClick={refresh}
+                  title="Re-read the folder from disk"
+                  className="text-[11.5px] text-accent transition-opacity hover:opacity-70"
+                >
+                  Refresh
+                </button>
               </div>
+
+              <nav className="mt-3.5">
+                <FileTree nodes={prepTree} onOpenFile={openFile} selectedPath={selected} />
+              </nav>
+
+              <div className="mt-3.5">
+                <NewFolder />
+              </div>
+
+              <p className="mt-3.5 text-[12.5px] text-muted">
+                Click a file to open the timed reader.
+              </p>
 
               <AddPdfs />
             </aside>
@@ -228,7 +242,9 @@ export default function App() {
               ) : (
                 <section>
                   <h3 className="m-0 mb-2 text-lg font-semibold">
-                    {openPdf === null ? 'Nothing open' : (openPdf.split('/').at(-1) ?? 'Nothing open')}
+                    {openPdf === null
+                      ? 'Nothing open'
+                      : (openPdf.split('/').at(-1) ?? 'Nothing open')}
                   </h3>
                   <p className="m-0 max-w-[62ch] text-sm leading-[1.55] text-soft [text-wrap:pretty]">
                     Open a PDF from the tree. It reopens on the page you left, and the timer starts
@@ -237,7 +253,7 @@ export default function App() {
                 </section>
               )}
 
-              <NotesPanel onCompose={showQuickNote} />
+              <NotesPanel />
 
               <CameraSpike />
 

@@ -32,18 +32,16 @@ export function AddPdfs() {
   };
 
   return (
-    <div className="border-t border-graphite/20 px-3 py-2">
-      <label
-        htmlFor="import-dest"
-        className="block text-[11px] font-medium uppercase tracking-widest text-graphite"
-      >
+    <div className="mt-auto flex flex-col gap-2.5 pt-6">
+      <label htmlFor="import-dest" className="kicker">
         Add PDFs {prep && <span className="normal-case tracking-normal">to {prep.name}</span>}
       </label>
+
       <select
         id="import-dest"
         value={value}
         onChange={(e) => setDest(e.target.value)}
-        className="mt-1.5 w-full rounded border border-graphite/30 bg-surface px-2 py-1 text-xs"
+        className="tabular w-full cursor-pointer rounded-sm border border-divider bg-surface px-2.5 py-1.5 text-[13px]"
       >
         {dirs.map((dir) => (
           <option key={dir} value={dir}>
@@ -56,14 +54,14 @@ export function AddPdfs() {
         type="button"
         onClick={run}
         disabled={importing}
-        className="mt-1.5 w-full rounded border border-graphite/40 px-2 py-1.5 text-xs transition-colors hover:bg-graphite/10 disabled:opacity-40"
+        className="w-full rounded-sm border border-divider px-[15px] py-2 text-[13.5px] transition-colors hover:bg-tint disabled:opacity-40"
       >
-        {importing ? 'Copying\u2026' : 'Choose PDFs\u2026'}
+        {importing ? 'Copying…' : 'Choose PDFs…'}
       </button>
 
       {lastAdded !== null && lastAdded > 0 && (
-        <p className="mt-1.5 text-[11px] text-graphite">
-          Added <span className="tabular text-ink">{lastAdded}</span>
+        <p className="text-[12.5px] text-muted">
+          Added <span className="tabular">{lastAdded}</span>
           {lastAdded === 1 ? ' file' : ' files'} to{' '}
           <span className="tabular">{dirLabel(value)}</span>.
         </p>

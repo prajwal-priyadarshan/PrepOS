@@ -88,7 +88,7 @@ export function PrepDialog({ prep, onClose }: Props) {
 
   const fields = (
     <>
-      <label className="mt-4 block text-xs font-medium text-graphite" htmlFor="prep-name">
+      <label className="kicker mt-6 block" htmlFor="prep-name">
         What are you preparing for?
       </label>
       <input
@@ -97,11 +97,11 @@ export function PrepDialog({ prep, onClose }: Props) {
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="DBMS endsem"
-        className="mt-1 w-full rounded border border-graphite/30 bg-surface px-2 py-1.5 text-sm"
+        className="mt-2 w-full rounded-sm border border-divider bg-surface px-[13px] py-2 text-sm"
       />
 
-      <label className="mt-3 block text-xs font-medium text-graphite" htmlFor="prep-folder">
-        Folder{editing && <span className="ml-1 font-normal normal-case">(fixed)</span>}
+      <label className="kicker mt-4 block" htmlFor="prep-folder">
+        Folder{editing && <span className="normal-case tracking-normal"> (fixed)</span>}
       </label>
       <input
         id="prep-folder"
@@ -112,17 +112,19 @@ export function PrepDialog({ prep, onClose }: Props) {
           setFolder(e.target.value);
         }}
         placeholder={editing ? '/ (vault root)' : undefined}
-        className="tabular mt-1 w-full rounded border border-graphite/30 bg-surface px-2 py-1.5 text-sm read-only:text-graphite"
+        className="tabular mt-2 w-full rounded-sm border border-divider bg-surface px-[13px] py-2 text-sm read-only:text-muted"
       />
       {editing ? (
-        <p className="mt-1 text-xs text-graphite">
+        <p className="mt-1.5 text-[12.5px] text-muted">
           Move the folder in Explorer to change where this prep's material lives.
         </p>
       ) : (
-        !free && <p className="mt-1 text-xs text-flag">Another prep already uses that folder.</p>
+        !free && (
+          <p className="mt-1.5 text-[12.5px] text-flag">Another prep already uses that folder.</p>
+        )
       )}
 
-      <label className="mt-3 block text-xs font-medium text-graphite" htmlFor="prep-target">
+      <label className="kicker mt-4 block" htmlFor="prep-target">
         Deadline (optional)
       </label>
       <input
@@ -130,9 +132,9 @@ export function PrepDialog({ prep, onClose }: Props) {
         type="date"
         value={targetDate}
         onChange={(e) => setTargetDate(e.target.value)}
-        className="tabular mt-1 w-full rounded border border-graphite/30 bg-surface px-2 py-1.5 text-sm"
+        className="tabular mt-2 w-full rounded-sm border border-divider bg-surface px-[13px] py-2 text-sm"
       />
-      <p className="mt-1 text-xs text-graphite">
+      <p className="mt-1.5 text-[12.5px] text-muted">
         {targetDate === ''
           ? 'Left empty this prep is open-ended and shows no countdown.'
           : 'Clear the date to make this prep open-ended again.'}
@@ -141,12 +143,12 @@ export function PrepDialog({ prep, onClose }: Props) {
   );
 
   const actions = (
-    <div className="mt-5 flex items-center justify-between">
+    <div className="mt-7 flex items-center justify-between">
       {onClose ? (
         <button
           type="button"
           onClick={onClose}
-          className="text-xs text-graphite underline-offset-2 hover:underline"
+          className="text-[13.5px] text-muted transition-colors hover:text-accent"
         >
           Cancel
         </button>
@@ -156,7 +158,7 @@ export function PrepDialog({ prep, onClose }: Props) {
       <button
         type="submit"
         disabled={!valid}
-        className="rounded bg-ink px-4 py-2 text-sm font-medium text-paper disabled:opacity-40"
+        className="rounded-sm bg-accent px-[15px] py-2 text-[13.5px] text-on-accent transition-opacity hover:opacity-90 disabled:opacity-40"
       >
         {busy ? 'Saving\u2026' : editing ? 'Save prep' : 'Create prep'}
       </button>
@@ -167,8 +169,9 @@ export function PrepDialog({ prep, onClose }: Props) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-paper px-6 text-ink">
         <form onSubmit={onSubmit} className="w-full max-w-md">
-          <h1 className="font-display text-3xl font-semibold tracking-tight">Your first prep</h1>
-          <p className="mt-3 text-sm leading-relaxed text-graphite">
+          <h1 className="m-0 text-[30px] font-semibold tracking-[-0.015em]">Your first prep</h1>
+          <div className="mt-3 h-[3px] bg-ink" />
+          <p className="mt-5 max-w-[62ch] text-sm leading-[1.55] text-soft [text-wrap:pretty]">
             An exam, an interview, a certification &mdash; anything you are working towards. It gets
             a folder in your vault for its material and, if it has one, a date to count down to.
             Both can change later, and you can add as many preps as you like.
@@ -184,12 +187,10 @@ export function PrepDialog({ prep, onClose }: Props) {
     <div className="animate-backdrop-in fixed inset-0 z-50 flex items-start justify-center bg-scrim/50 p-6 pt-24">
       <form
         onSubmit={onSubmit}
-        className="animate-card-in w-full max-w-sm rounded-lg border border-graphite/20 bg-surface p-5"
+        className="animate-card-in w-full max-w-sm rounded-sm border border-divider bg-paper p-6"
       >
-        <h2 className="font-display text-base font-semibold">
-          {editing ? 'Edit prep' : 'New prep'}
-        </h2>
-        <p className="mt-1 text-xs text-graphite">
+        <h2 className="m-0 text-[21px] font-semibold">{editing ? 'Edit prep' : 'New prep'}</h2>
+        <p className="mt-1.5 text-[13.5px] leading-[1.55] text-soft">
           {editing
             ? 'Rename it or move its deadline. Its material stays where it is.'
             : 'A folder in your vault and a date to count down to. Both can change later.'}

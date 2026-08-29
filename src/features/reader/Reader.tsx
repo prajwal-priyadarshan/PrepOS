@@ -3,18 +3,69 @@ import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import './pdfWorker';
+import { formatDuration, isCounting, MAX_SESSION_MS } from '@/lib/sessionClock';
 import { useProgress } from '@/store/useProgress';
 import { useQuickNote } from '@/store/useQuickNote';
+import { useSession } from '@/store/useSession';
 import { vault } from '@/vault';
 
 interface Props {
   filePath: string;
-  onClose: () => void;
+  /** Back to the dashboard. The file stays open and the clock keeps running. */
+  onBackToVault: () => void;
+  /** Closes the file, which is what ends the session and raises the save modal. */
+  onEndSession: () => void;
 }
 
 const PAGE_SAVE_DEBOUNCE_MS = 1000;
 
-export function Reader({ filePath, onClose }: Props) {
+/**
+ * The clock, at the size the reader gives it.
+ *
+ * It reads active time rather than wall time, so it stalls when you tab away or
+ * go idle - the number is what you actually read for, not how long the window
+ * was open.
+ */
+function ReaderClock() {
+  const clock = useSession((s) => s.clock);
+  const paused = useSession((s) => s.paused);
+  const windowHidden = useSession((s) => s.windowHidden);
+  const capNotified = useSession((s) => s.capNotified);
+  const togglePause = useSession((s) => s.togglePause);
+
+  const counting = !paused && (clock.external || (!windowHidden && isCounting(clock, Date.now())));
+
+  return (
+    <>
+      {capNotified && (
+        <span className="border-l-2 border-flag px-2.5 py-1 text-[11.5px] text-ink">
+          {formatDuration(MAX_SESSION_MS)} in &mdash; take the break.
+        </span>
+      )}
+      <span
+        aria-hidden
+        title={counting ? 'Counting' : 'Not counting'}
+        className={[
+          'inline-block size-1.5 rounded-full transition-colors',
+          counting ? 'bg-accent' : 'bg-muted',
+        ].join(' ')}
+      />
+      <span className="tabular text-[22px] font-semibold leading-none">
+        {formatDuration(clock.activeMs)}
+      </span>
+      <button
+        type="button"
+        onClick={togglePause}
+        title="Pause or resume (t)"
+        className="rounded-sm border border-divider px-[15px] py-2 text-[13.5px] transition-colors hover:bg-tint"
+      >
+        {paused ? 'Resume' : 'Pause'}
+      </button>
+    </>
+  );
+}
+
+export function Reader({ filePath, onBackToVault, onEndSession }: Props) {
   const savedPage = useProgress((s) => s.state.lastPage[filePath]);
   const setLastPage = useProgress((s) => s.setLastPage);
   const showQuickNote = useQuickNote((s) => s.show);
@@ -61,12 +112,12 @@ export function Reader({ filePath, onClose }: Props) {
    */
   const file = useMemo(() => (bytes ? { data: new Uint8Array(bytes) } : null), [bytes]);
 
-  // Fit the page to the frame.
+  // Fit the page to the mat, less its 26px padding on both sides.
   useEffect(() => {
     const el = frameRef.current;
     if (!el) return;
     const observer = new ResizeObserver(([entry]) => {
-      if (entry) setWidth(Math.max(320, Math.floor(entry.contentRect.width - 48)));
+      if (entry) setWidth(Math.max(320, Math.floor(entry.contentRect.width - 52)));
     });
     observer.observe(el);
     return () => observer.disconnect();
@@ -96,80 +147,82 @@ export function Reader({ filePath, onClose }: Props) {
       if (e.key === 'ArrowRight') go(1);
       else if (e.key === 'ArrowLeft') go(-1);
       else if (e.key === 'Escape') {
-        // The quick-note sheet owns Escape while it is up; closing the file
-        // underneath it would end the session the note is about.
+        // The quick-note sheet owns Escape while it is up; navigating away
+        // underneath it would strand the note it is about.
         if (useQuickNote.getState().open) return;
-        onClose();
+        // Back to the dashboard, not out of the session - Escape is the cheap
+        // key, and ending a sitting is not a cheap action.
+        onBackToVault();
       } else return;
       e.preventDefault();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [go, onClose]);
+  }, [go, onBackToVault]);
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-graphite/20 px-4 py-2">
-        <p className="truncate text-sm" title={filePath}>
-          {filePath.split('/').at(-1)}
-        </p>
-        <div className="flex shrink-0 items-center gap-3">
+    <div className="flex min-h-0 flex-1 flex-col px-[34px] pb-[34px] pt-[22px]">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-[18px] gap-y-3">
+        <div className="flex min-w-0 items-baseline gap-4">
           <button
             type="button"
-            onClick={showQuickNote}
-            title="Note on this page (n)"
-            className="rounded px-2 py-1 text-xs text-graphite hover:bg-graphite/10"
+            onClick={onBackToVault}
+            title="Back to the dashboard (Esc). The clock keeps running."
+            className="shrink-0 text-[13.5px] text-accent transition-opacity hover:opacity-70"
           >
-            Note
+            &larr; Vault
           </button>
+          <span className="tabular truncate text-[13px]" title={filePath}>
+            {filePath.split('/').at(-1)}
+          </span>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-[18px]">
           <button
             type="button"
             onClick={() => setShowText((v) => !v)}
-            title="Toggle selectable text layer"
+            title="Toggle the selectable text layer"
             className={[
-              'rounded px-2 py-1 text-xs transition-colors',
-              showText ? 'bg-ink text-paper' : 'text-graphite hover:bg-graphite/10',
+              'rounded-sm px-2 py-1 text-[13px] transition-colors',
+              showText ? 'bg-tint text-accent' : 'text-muted hover:bg-tint',
             ].join(' ')}
           >
             Text
           </button>
-          <div className="flex items-center gap-1">
+
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => go(-1)}
               disabled={page <= 1}
-              className="rounded px-2 py-1 text-xs text-graphite hover:bg-graphite/10 disabled:opacity-30"
+              title="Previous page (←)"
+              className="rounded-sm px-1.5 py-1 text-[13px] text-muted transition-colors hover:bg-tint disabled:opacity-30"
             >
               &larr;
             </button>
-            <span className="tabular min-w-24 text-center text-xs">
-              {page} / {pageCount || '\u2013'}
+            <span className="tabular min-w-[92px] text-center text-[13px] text-muted">
+              page {page} / {pageCount || '–'}
             </span>
             <button
               type="button"
               onClick={() => go(1)}
               disabled={pageCount > 0 && page >= pageCount}
-              className="rounded px-2 py-1 text-xs text-graphite hover:bg-graphite/10 disabled:opacity-30"
+              title="Next page (→)"
+              className="rounded-sm px-1.5 py-1 text-[13px] text-muted transition-colors hover:bg-tint disabled:opacity-30"
             >
               &rarr;
             </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            title="Close (Esc)"
-            className="rounded px-2 py-1 text-xs text-graphite hover:bg-graphite/10"
-          >
-            Close
-          </button>
+
+          <ReaderClock />
         </div>
       </div>
 
-      <div ref={frameRef} className="min-h-0 flex-1 overflow-auto bg-graphite/10 p-6">
+      {/* The mat: the one filled surface in the app, and the reason the page
+          itself reads as a sheet of paper laid on it rather than as a panel. */}
+      <div ref={frameRef} className="mt-5 min-h-0 flex-1 overflow-auto bg-surface p-[26px]">
         {loadError && (
-          <p className="mx-auto max-w-md rounded border-l-2 border-flag bg-flag/5 px-3 py-2 text-sm">
-            {loadError}
-          </p>
+          <p className="mx-auto max-w-md border-l-2 border-flag px-3 py-2 text-sm">{loadError}</p>
         )}
 
         {file && (
@@ -177,7 +230,7 @@ export function Reader({ filePath, onClose }: Props) {
             file={file}
             onLoadSuccess={({ numPages }) => setPageCount(numPages)}
             onLoadError={(err) => setLoadError(err.message)}
-            loading={<p className="text-sm text-graphite">Loading&hellip;</p>}
+            loading={<p className="text-sm text-muted">Loading&hellip;</p>}
             error={<p className="text-sm text-flag">Could not render this PDF.</p>}
             className="flex justify-center"
           >
@@ -186,7 +239,7 @@ export function Reader({ filePath, onClose }: Props) {
               width={width}
               renderTextLayer={showText}
               renderAnnotationLayer={false}
-              className="shadow-sm"
+              className="border border-divider"
             />
             {/* Neighbours rendered offscreen so paging feels instant. Never all
                 pages - a 400-page quant book would freeze the window. */}
@@ -210,6 +263,27 @@ export function Reader({ filePath, onClose }: Props) {
             </div>
           </Document>
         )}
+      </div>
+
+      <div className="mt-[18px] flex shrink-0 items-center justify-between gap-4">
+        {/* The kicker's type role, spelled out rather than taken from the
+            utility: this is the one kicker in the app that is interactive, and
+            it needs a hover colour the utility's own colour would fight. */}
+        <button
+          type="button"
+          onClick={showQuickNote}
+          className="text-[10px] uppercase leading-[1.4] tracking-[0.12em] text-muted transition-colors hover:text-accent"
+        >
+          Press n to note this page
+        </button>
+        <button
+          type="button"
+          onClick={onEndSession}
+          title="Close the file and log this sitting"
+          className="rounded-sm bg-accent px-[15px] py-2 text-[13.5px] text-on-accent transition-opacity hover:opacity-90"
+        >
+          End session
+        </button>
       </div>
     </div>
   );

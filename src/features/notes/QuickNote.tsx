@@ -46,14 +46,12 @@ export function QuickNote() {
 
   return (
     <div className="animate-backdrop-in fixed inset-0 z-40 flex items-start justify-center bg-scrim/50 p-6 pt-24">
-      <div className="animate-card-in w-full max-w-md rounded-lg border border-graphite/20 bg-surface p-5">
-        <h2 className="font-display text-base font-semibold">Quick note</h2>
-        <p className="mt-1 text-xs text-graphite">
+      <div className="animate-card-in w-full max-w-md rounded-sm border border-divider bg-paper p-6">
+        <h2 className="m-0 text-[21px] font-semibold">Quick note</h2>
+        <p className="mt-1.5 text-[13.5px] text-soft">
           Saved to this vault. <kbd>Esc</kbd> to close.
         </p>
-        <div className="mt-3">
-          <NoteComposer context={context} autoFocus onSaved={hide} onCancel={hide} />
-        </div>
+        <NoteComposer context={context} autoFocus onSaved={hide} onCancel={hide} />
       </div>
     </div>
   );

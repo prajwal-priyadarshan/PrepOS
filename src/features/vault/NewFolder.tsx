@@ -55,20 +55,18 @@ export function NewFolder() {
 
   if (!open) {
     return (
-      <div className="px-3 pb-2">
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="rounded px-1.5 py-0.5 text-[11px] text-graphite transition-colors hover:bg-graphite/10"
-        >
-          + New folder
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="text-[13.5px] text-accent transition-opacity hover:opacity-70"
+      >
+        + New folder
+      </button>
     );
   }
 
   return (
-    <form onSubmit={submit} className="px-3 pb-2">
+    <form onSubmit={submit}>
       <input
         ref={inputRef}
         value={name}
@@ -78,24 +76,24 @@ export function NewFolder() {
         }}
         placeholder="Indexing"
         aria-label="New folder name"
-        className="tabular w-full rounded border border-graphite/30 bg-surface px-2 py-1 text-xs"
+        className="tabular w-full rounded-sm border border-divider bg-surface px-2.5 py-1.5 text-[13px]"
       />
-      {taken && <p className="mt-1 text-[11px] text-flag">That folder already exists.</p>}
+      {taken && <p className="mt-1.5 text-[12.5px] text-flag">That folder already exists.</p>}
       {typed && slug !== name.trim() && !taken && (
-        <p className="tabular mt-1 text-[11px] text-graphite">Creates {slug}</p>
+        <p className="tabular mt-1.5 text-[12.5px] text-muted">Creates {slug}</p>
       )}
-      <div className="mt-1.5 flex items-center gap-2">
+      <div className="mt-2 flex items-center gap-4">
         <button
           type="submit"
           disabled={!valid}
-          className="rounded bg-ink px-2 py-1 text-[11px] font-medium text-paper disabled:opacity-40"
+          className="rounded-sm bg-accent px-3 py-1.5 text-[13px] text-on-accent transition-opacity hover:opacity-90 disabled:opacity-40"
         >
-          {busy ? 'Creating\u2026' : 'Create'}
+          {busy ? 'Creating…' : 'Create'}
         </button>
         <button
           type="button"
           onClick={close}
-          className="text-[11px] text-graphite underline-offset-2 hover:underline"
+          className="text-[13px] text-muted transition-colors hover:text-accent"
         >
           Cancel
         </button>

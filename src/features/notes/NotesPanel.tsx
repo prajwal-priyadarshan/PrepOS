@@ -26,48 +26,49 @@ export function NotesPanel() {
   const shown = showAll ? ordered : ordered.slice(0, INITIAL_SHOWN);
 
   return (
-    <section className="rounded-md border border-graphite/20 bg-surface p-4">
-      <div className="flex items-baseline justify-between">
-        <h2 className="font-display text-sm font-semibold">Notes</h2>
-        <span className="text-[11px] text-graphite">
-          <span className="tabular text-ink">{notes.length}</span> kept &middot; press <kbd>n</kbd>{' '}
-          anywhere
+    <section>
+      <div className="flex items-baseline justify-between gap-4">
+        <h3 className="m-0 text-lg font-semibold">Notes</h3>
+        <span className="kicker whitespace-nowrap">
+          <span className="tabular">{notes.length}</span> kept &middot; press n anywhere
         </span>
       </div>
 
-      <div className="mt-3">
-        <NoteComposer />
-      </div>
+      <NoteComposer />
 
       {ordered.length > 0 && (
-        <ul className="mt-4 space-y-3 border-t border-graphite/15 pt-3">
+        <ul className="mt-4">
           {shown.map((note) => (
-            <li key={note.id} className="group">
-              <div className="flex items-baseline justify-between gap-3">
-                <span className="text-[11px] text-graphite">
-                  <span className="tabular text-ink">{note.studyDay}</span>
-                  <span className="tabular"> {timeOf(note.createdAt)}</span>
-                  <span> &middot; {note.section}</span>
-                  {note.filePath !== undefined && (
-                    <span title={note.filePath}>
-                      <span> &middot; </span>
-                      <span className="tabular">{note.filePath.split('/').at(-1)}</span>
-                      {note.page !== undefined && <span className="tabular"> p.{note.page}</span>}
-                    </span>
-                  )}
+            <li
+              key={note.id}
+              className="group grid grid-cols-[1fr_auto] gap-4 border-t border-divider py-[11px]"
+            >
+              <p
+                className="m-0 whitespace-pre-wrap text-[13.5px] leading-[1.55] text-soft"
+                data-selectable
+              >
+                {note.body}
+              </p>
+              <div className="flex shrink-0 items-baseline gap-3">
+                <span
+                  className="tabular text-[11px] text-muted"
+                  title={
+                    note.filePath === undefined
+                      ? note.section
+                      : `${note.section} · ${note.filePath}${note.page !== undefined ? ` p.${note.page}` : ''}`
+                  }
+                >
+                  {note.studyDay} {timeOf(note.createdAt)}
                 </span>
                 <button
                   type="button"
                   onClick={() => removeNote(note.id)}
                   title="Delete this note"
-                  className="shrink-0 text-[11px] text-graphite opacity-0 transition-opacity hover:text-flag focus-visible:opacity-100 group-hover:opacity-100"
+                  className="text-[11px] text-muted opacity-0 transition-opacity hover:text-flag focus-visible:opacity-100 group-hover:opacity-100"
                 >
                   Delete
                 </button>
               </div>
-              <p className="mt-0.5 whitespace-pre-wrap text-sm leading-relaxed" data-selectable>
-                {note.body}
-              </p>
             </li>
           ))}
         </ul>
@@ -77,7 +78,7 @@ export function NotesPanel() {
         <button
           type="button"
           onClick={() => setShowAll((v) => !v)}
-          className="mt-3 text-xs text-graphite underline-offset-2 hover:underline"
+          className="mt-3 text-[13.5px] text-accent transition-opacity hover:opacity-70"
         >
           {showAll ? 'Show recent only' : `Show all ${ordered.length}`}
         </button>

@@ -14,11 +14,8 @@ export function ThemeToggle() {
   const setTheme = useTheme((s) => s.setTheme);
 
   return (
-    <div
-      role="group"
-      aria-label="Theme"
-      className="flex shrink-0 overflow-hidden rounded-sm border border-divider"
-    >
+    <fieldset className="m-0 flex min-w-0 shrink-0 overflow-hidden rounded-sm border border-divider p-0">
+      <legend className="sr-only">Theme</legend>
       {THEMES.map((option) => {
         const selected = option === theme;
         return (
@@ -36,6 +33,6 @@ export function ThemeToggle() {
           </button>
         );
       })}
-    </div>
+    </fieldset>
   );
 }

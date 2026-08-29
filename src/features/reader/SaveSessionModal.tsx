@@ -59,23 +59,23 @@ export function SaveSessionModal() {
     <div className="animate-backdrop-in fixed inset-0 z-50 flex items-center justify-center bg-scrim/50 p-6">
       <form
         onSubmit={onSubmit}
-        className="animate-card-in w-full max-w-sm rounded-lg border border-graphite/20 bg-surface p-5"
+        className="animate-card-in w-full max-w-sm rounded-sm border border-divider bg-paper p-6"
       >
-        <h2 className="font-display text-base font-semibold">Log this session</h2>
-        <p className="mt-1 text-xs text-graphite">
-          <span className="tabular text-ink">{formatDuration(pending.activeSeconds * 1000)}</span>
+        <h2 className="m-0 text-[21px] font-semibold">Log this session</h2>
+        <p className="mt-1.5 text-[13.5px] text-soft">
+          <span className="tabular">{formatDuration(pending.activeSeconds * 1000)}</span>
           <span> active on </span>
-          <span className="break-all">{fileName}</span>
+          <span className="tabular break-all">{fileName}</span>
         </p>
 
-        <label className="mt-4 block text-xs font-medium text-graphite" htmlFor="section">
+        <label className="kicker mt-6 block" htmlFor="section">
           Section
         </label>
         <select
           id="section"
           value={section}
           onChange={(e) => setSection(e.target.value as Section)}
-          className="mt-1 w-full rounded border border-graphite/30 bg-surface px-2 py-1.5 text-sm"
+          className="mt-2 w-full cursor-pointer rounded-sm border border-divider bg-surface px-[13px] py-2 text-sm"
         >
           {/* The section the file sits in may not be one of the prep's folders
               any more - keep it selectable rather than silently rewriting it. */}
@@ -86,9 +86,9 @@ export function SaveSessionModal() {
           ))}
         </select>
 
-        <div className="mt-3 grid grid-cols-2 gap-3">
+        <div className="mt-4 grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium text-graphite" htmlFor="attempted">
+            <label className="kicker block" htmlFor="attempted">
               Attempted
             </label>
             <input
@@ -97,11 +97,11 @@ export function SaveSessionModal() {
               inputMode="numeric"
               value={attempted}
               onChange={(e) => setAttempted(digitsOnly(e.target.value))}
-              className="tabular mt-1 w-full rounded border border-graphite/30 bg-surface px-2 py-1.5 text-sm"
+              className="tabular mt-2 w-full rounded-sm border border-divider bg-surface px-[13px] py-2 text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-graphite" htmlFor="correct">
+            <label className="kicker block" htmlFor="correct">
               Correct
             </label>
             <input
@@ -109,37 +109,37 @@ export function SaveSessionModal() {
               inputMode="numeric"
               value={correct}
               onChange={(e) => setCorrect(digitsOnly(e.target.value))}
-              className="tabular mt-1 w-full rounded border border-graphite/30 bg-surface px-2 py-1.5 text-sm"
+              className="tabular mt-2 w-full rounded-sm border border-divider bg-surface px-[13px] py-2 text-sm"
             />
           </div>
         </div>
 
         {filled && !valid && (
-          <p className="mt-2 text-xs text-flag">Correct cannot exceed attempted.</p>
+          <p className="mt-2 text-[12.5px] text-flag">Correct cannot exceed attempted.</p>
         )}
 
-        <label className="mt-3 block text-xs font-medium text-graphite" htmlFor="note">
+        <label className="kicker mt-4 block" htmlFor="note">
           Note (optional)
         </label>
         <input
           id="note"
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          className="mt-1 w-full rounded border border-graphite/30 bg-surface px-2 py-1.5 text-sm"
+          className="mt-2 w-full rounded-sm border border-divider bg-surface px-[13px] py-2 text-sm"
         />
 
-        <div className="mt-5 flex items-center justify-between">
+        <div className="mt-7 flex items-center justify-between">
           <button
             type="button"
             onClick={discard}
-            className="text-xs text-graphite underline-offset-2 hover:underline"
+            className="text-[13.5px] text-muted transition-colors hover:text-accent"
           >
             Discard
           </button>
           <button
             type="submit"
             disabled={!valid}
-            className="rounded bg-ink px-4 py-2 text-sm font-medium text-paper disabled:opacity-40"
+            className="rounded-sm bg-accent px-[15px] py-2 text-[13.5px] text-on-accent transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             Save session
           </button>

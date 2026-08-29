@@ -8,16 +8,24 @@ interface Props {
   selectedPath?: string | null;
 }
 
+/**
+ * The vault, as a list rather than a panel.
+ *
+ * Rows carry a negative left margin equal to their own padding, so the text
+ * sits optically flush with the kicker above it while the hover and selected
+ * tints still extend past it - the fill reads as a highlight over the column
+ * rather than as a box the list lives inside.
+ */
 export function FileTree({ nodes, depth = 0, onOpenFile, selectedPath }: Props) {
   const expanded = useVault((s) => s.expanded);
   const toggleExpanded = useVault((s) => s.toggleExpanded);
 
   if (nodes.length === 0 && depth === 0) {
-    return <p className="px-3 py-2 text-sm text-graphite">This folder is empty.</p>;
+    return <p className="text-[12.5px] text-muted">This folder is empty.</p>;
   }
 
   return (
-    <ul className={depth === 0 ? 'space-y-px' : 'space-y-px border-l border-graphite/15 ml-3'}>
+    <ul className={depth === 0 ? '-ml-[9px]' : 'ml-2.5'}>
       {nodes.map((node) => {
         const isOpen = expanded.has(node.path);
         const isSelected = selectedPath === node.path;
@@ -30,22 +38,24 @@ export function FileTree({ nodes, depth = 0, onOpenFile, selectedPath }: Props) 
                 node.isDirectory ? toggleExpanded(node.path) : onOpenFile?.(node.path)
               }
               aria-expanded={node.isDirectory ? isOpen : undefined}
+              title={node.name}
               className={[
-                'flex w-full items-center gap-2 rounded px-2 py-1 text-left text-sm transition-colors',
-                isSelected ? 'bg-ink text-paper' : 'hover:bg-graphite/10',
+                'flex w-full items-center gap-1.5 rounded-sm px-[9px] py-[7px] text-left text-[13.5px] leading-tight transition-colors',
+                isSelected ? 'bg-tint text-accent' : 'hover:bg-tint',
               ].join(' ')}
-              style={{ paddingLeft: `${depth * 10 + 8}px` }}
             >
               <span
                 aria-hidden
                 className={[
-                  'inline-block w-3 shrink-0 text-center text-[10px]',
-                  isSelected ? 'text-paper/70' : 'text-graphite',
+                  'inline-block w-2 shrink-0 text-center text-[9px]',
+                  isSelected ? 'text-accent' : 'text-muted',
                 ].join(' ')}
               >
-                {node.isDirectory ? (isOpen ? '\u25BE' : '\u25B8') : ''}
+                {node.isDirectory ? (isOpen ? '▾' : '▸') : ''}
               </span>
-              <span className={node.isDirectory ? 'font-medium' : ''}>{node.name}</span>
+              <span className={['truncate', node.isDirectory ? 'font-semibold' : ''].join(' ')}>
+                {node.name}
+              </span>
             </button>
 
             {node.isDirectory && isOpen && node.children && node.children.length > 0 && (

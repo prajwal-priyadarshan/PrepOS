@@ -13,7 +13,15 @@ import { useActivePrep, usePreps } from '../preps/usePreps';
  * 10px kicker, deliberately small enough that the row reads as four numbers
  * first and four words second.
  */
-function Figure({ value, label, muted = false }: { value: string; label: string; muted?: boolean }) {
+function Figure({
+  value,
+  label,
+  muted = false,
+}: {
+  value: string;
+  label: string;
+  muted?: boolean;
+}) {
   return (
     <div>
       <p

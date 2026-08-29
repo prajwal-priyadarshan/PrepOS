@@ -41,27 +41,28 @@ export function ExternalFile({ filePath }: Props) {
   };
 
   return (
-    <section className="rounded-md border border-graphite/20 bg-surface p-4">
-      <h2 className="font-display text-sm font-semibold">Opens outside PrepOS</h2>
-      <p className="tabular mt-2 break-all text-sm">{name}</p>
-      <p className="mt-1 text-xs text-graphite">
-        Section{' '}
-        <span className="tabular text-ink">{sectionForPath(filePath, prep?.folder ?? '')}</span>
-        <span> &middot; the reader handles PDFs only.</span>
+    <section>
+      <h3 className="tabular m-0 mb-2 break-all text-lg font-semibold">{name}</h3>
+      <p className="m-0 max-w-[62ch] text-sm leading-[1.55] text-soft [text-wrap:pretty]">
+        This one opens outside PrepOS &mdash; the reader handles PDFs only. Started with the timer,
+        it keeps counting while PrepOS sits behind the other window, so you end that session
+        yourself.
+      </p>
+      <p className="tabular m-0 mt-2 text-[12.5px] text-muted">
+        section {sectionForPath(filePath, prep?.folder ?? '')}
       </p>
 
       {running ? (
-        <p className="mt-3 rounded border-l-2 border-marker bg-marker/10 px-3 py-2 text-xs">
-          Timing this now. It keeps counting while PrepOS is behind the other window, so end the
-          session yourself when you stop.
+        <p className="mt-4 border-l-2 border-accent px-3 py-2 text-[13.5px] text-soft">
+          Timing this now. End the session yourself when you stop.
         </p>
       ) : (
-        <div className="mt-3 flex flex-wrap items-center gap-3">
+        <div className="mt-4 flex flex-wrap items-center gap-4">
           <button
             type="button"
             onClick={() => open(true)}
             disabled={busy}
-            className="rounded bg-ink px-3 py-1.5 text-xs font-medium text-paper disabled:opacity-40"
+            className="rounded-sm bg-accent px-[15px] py-2 text-[13.5px] text-on-accent transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             {busy ? 'Opening…' : 'Open and start timer'}
           </button>
@@ -69,7 +70,7 @@ export function ExternalFile({ filePath }: Props) {
             type="button"
             onClick={() => open(false)}
             disabled={busy}
-            className="rounded border border-graphite/40 px-3 py-1.5 text-xs text-graphite transition-colors hover:bg-graphite/10 disabled:opacity-40"
+            className="rounded-sm border border-divider px-[15px] py-2 text-[13.5px] transition-colors hover:bg-tint disabled:opacity-40"
           >
             Just open it
           </button>
@@ -77,7 +78,7 @@ export function ExternalFile({ filePath }: Props) {
       )}
 
       {error !== null && (
-        <p className="mt-3 rounded border-l-2 border-flag bg-flag/5 px-3 py-2 text-xs">{error}</p>
+        <p className="mt-4 border-l-2 border-flag px-3 py-2 text-[13.5px]">{error}</p>
       )}
     </section>
   );

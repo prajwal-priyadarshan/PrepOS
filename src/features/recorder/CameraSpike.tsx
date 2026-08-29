@@ -63,42 +63,41 @@ export function CameraSpike() {
   }
 
   return (
-    <section className="rounded-md border border-graphite/20 bg-surface p-4">
-      <div className="flex items-center justify-between gap-4">
+    <section>
+      <div className="flex items-start justify-between gap-[30px]">
         <div>
-          <h2 className="font-display text-sm font-semibold">Camera check</h2>
-          <p className="mt-0.5 text-xs text-graphite">
+          <h3 className="m-0 mb-1.5 text-lg font-semibold">Camera check</h3>
+          <p className="m-0 max-w-[62ch] text-[13.5px] leading-[1.55] text-soft">
             Confirms your camera and microphone are ready before you record a session.
           </p>
         </div>
-        <div className="flex shrink-0 gap-2">
-          <button
-            type="button"
-            onClick={run}
-            disabled={result.kind === 'testing'}
-            className="rounded border border-ink px-3 py-1.5 text-xs font-medium transition-colors hover:bg-ink hover:text-paper disabled:opacity-50"
-          >
-            {result.kind === 'testing' ? 'Asking\u2026' : 'Test camera'}
-          </button>
+        <div className="flex shrink-0 gap-3">
           {result.kind === 'ok' && (
             <button
               type="button"
               onClick={stop}
-              className="rounded border border-graphite/40 px-3 py-1.5 text-xs text-graphite transition-colors hover:bg-graphite/10"
+              className="text-[13.5px] text-muted transition-colors hover:text-accent"
             >
               Stop
             </button>
           )}
+          <button
+            type="button"
+            onClick={run}
+            disabled={result.kind === 'testing'}
+            className="rounded-sm border border-divider px-[15px] py-2 text-[13.5px] transition-colors hover:bg-tint disabled:opacity-50"
+          >
+            {result.kind === 'testing' ? 'Asking\u2026' : 'Test camera'}
+          </button>
         </div>
       </div>
 
       {result.kind === 'ok' && (
-        <div className="mt-3">
-          <p className="text-xs text-graphite">
-            <span className="font-medium text-ink">Camera and microphone available.</span>{' '}
-            {result.video} &middot; {result.audio}
+        <div className="mt-4">
+          <p className="m-0 text-[13.5px] text-soft">
+            Camera and microphone available. {result.video} &middot; {result.audio}
           </p>
-          <p className="tabular mt-1 text-[11px] text-graphite">
+          <p className="tabular mt-1.5 text-[11.5px] text-muted">
             {result.codecs.length > 0
               ? `codecs: ${result.codecs.join('  ')}`
               : 'no webm codec supported \u2014 recorder would need a different container'}
@@ -107,18 +106,18 @@ export function CameraSpike() {
             ref={videoRef}
             muted
             playsInline
-            className="mt-3 w-full max-w-xs rounded border border-graphite/20 bg-ink"
+            className="mt-4 w-full max-w-xs rounded-sm border border-divider bg-surface"
           />
         </div>
       )}
 
       {result.kind === 'fail' && (
-        <div className="mt-3 rounded border-l-2 border-flag bg-flag/5 px-3 py-2">
-          <p className="text-xs font-medium text-ink">
+        <div className="mt-4 border-l-2 border-flag px-3 py-2">
+          <p className="m-0 text-[13.5px]">
             Blocked: <span className="tabular">{result.name}</span>
           </p>
-          <p className="mt-1 text-xs text-graphite">{result.message}</p>
-          <p className="mt-2 text-xs text-graphite">
+          <p className="m-0 mt-1.5 text-[13.5px] text-soft">{result.message}</p>
+          <p className="m-0 mt-2 text-[13.5px] text-muted">
             Check Windows Settings &rsaquo; Privacy &amp; security &rsaquo; Camera (and Microphone)
             and make sure desktop apps are allowed access.
           </p>
