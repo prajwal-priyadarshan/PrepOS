@@ -9,8 +9,9 @@ import './styles/tokens.css';
 
 // The inline script in index.html has already stamped this before first paint.
 // Re-stamping costs nothing and keeps the DOM honest if that script is ever
-// dropped, so the two can never silently disagree.
-applyTheme(useTheme.getState().theme);
+// dropped, so the two can never silently disagree. The resolved theme, not the
+// choice - 'system' is not something the stylesheet can be handed.
+applyTheme(useTheme.getState().resolved);
 
 const root = document.getElementById('root');
 if (!root) throw new Error('#root missing from index.html');

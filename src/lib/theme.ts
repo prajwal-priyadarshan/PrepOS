@@ -1,19 +1,24 @@
 /**
  * Theme choice and persistence key.
  *
- * Pure on purpose: main.tsx has to resolve a theme synchronously before the
+ * Pure on purpose: index.html has to resolve a theme synchronously before the
  * first paint, long before any store exists, and the same rules have to hold
  * later when the toggle acts on it.
  *
- * Only two themes exist. The OS preference is consulted exactly once - to
- * pick a sensible default the very first time the app ever launches on a
- * machine - and never again after that: a toggle that a person set can't be
- * quietly overridden by their OS switching to night mode later.
+ * Three choices, two outcomes. 'light' and 'dark' are answers; 'system' is a
+ * standing instruction to keep asking the OS. That is why choosing a theme and
+ * resolving one are separate steps - only the resolved half ever reaches the
+ * document, and 'system' can resolve differently an hour later without anyone
+ * touching the toggle.
  */
 
-export type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark' | 'system';
 
-export const THEMES: readonly Theme[] = ['light', 'dark'];
+/** What actually lands on the document. 'system' never does. */
+export type Resolved = 'light' | 'dark';
+
+/** Cycle order for the toggle, and the order they are named in. */
+export const THEMES: readonly Theme[] = ['light', 'dark', 'system'];
 
 /**
  * localStorage, not the Tauri settings store.
@@ -28,23 +33,36 @@ export const THEME_STORAGE_KEY = 'prepos.theme';
 export const DARK_QUERY = '(prefers-color-scheme: dark)';
 
 export function isTheme(value: unknown): value is Theme {
-  return value === 'light' || value === 'dark';
+  return value === 'light' || value === 'dark' || value === 'system';
 }
 
 /**
  * Anything recognised is kept as-is. Anything else - never saved before, hand
- * edited, from an older build that still wrote 'system' - falls back to the
- * OS preference at this exact moment, which only matters this one time.
+ * edited, storage unreadable - starts on 'system', so a first launch matches
+ * the machine it is on without claiming the person chose that.
  */
-export function readTheme(raw: unknown, systemPrefersDark: boolean): Theme {
-  if (isTheme(raw)) return raw;
+export function readTheme(raw: unknown): Theme {
+  return isTheme(raw) ? raw : 'system';
+}
+
+export function resolveTheme(theme: Theme, systemPrefersDark: boolean): Resolved {
+  if (theme !== 'system') return theme;
   return systemPrefersDark ? 'dark' : 'light';
 }
 
-export function otherTheme(theme: Theme): Theme {
-  return theme === 'light' ? 'dark' : 'light';
+/**
+ * Light -> Dark -> System -> Light.
+ *
+ * One button has to visit three states, so the order is fixed and never
+ * shortest-path: a person who overshoots gets back by carrying on in the same
+ * direction, which is only true if the direction never changes.
+ */
+export function nextTheme(theme: Theme): Theme {
+  if (theme === 'light') return 'dark';
+  return theme === 'dark' ? 'system' : 'light';
 }
 
 export function themeLabel(theme: Theme): string {
-  return theme === 'light' ? 'Light' : 'Dark';
+  if (theme === 'light') return 'Light';
+  return theme === 'dark' ? 'Dark' : 'System';
 }

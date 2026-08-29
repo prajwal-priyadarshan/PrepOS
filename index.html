@@ -18,6 +18,8 @@
         } catch {
           /* Storage can be unavailable. The system preference is a fine answer. */
         }
+        /* 'system', never-set and anything unrecognised all mean the same
+         * thing here: ask the OS. Only an explicit choice overrides it. */
         const dark =
           saved === 'dark' ||
           (saved !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
