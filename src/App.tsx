@@ -17,7 +17,7 @@ import { AddFiles } from './features/vault/AddFiles';
 import { ConnectScreen } from './features/vault/ConnectScreen';
 import { FileTree } from './features/vault/FileTree';
 import { NewFolder } from './features/vault/NewFolder';
-import { isInPrep, type Prep } from './lib/model';
+import type { Prep } from './lib/model';
 import { treeForPrep } from './lib/prepTree';
 import { summarise } from './lib/stats';
 import { studyDay } from './lib/studyDay';
@@ -98,8 +98,10 @@ export default function App() {
   }, [status, loadProgress]);
 
   // The timer runs for as long as a PDF is open - not for as long as the
-  // reader is the visible view. Stepping back to the dashboard to check
-  // another prep's numbers is not the end of a sitting; closing the file is.
+  // reader is the visible view specifically. Staying inside the prep but
+  // switching from Reader to Overview is not the end of a sitting; leaving
+  // the prep for the dashboard is - see backToDashboard, which closes the
+  // file (via endSession) before it gets here.
   useEffect(() => {
     if (openPdf === null) return;
     const session = useSession.getState();
@@ -148,25 +150,28 @@ export default function App() {
    * sitting are the same click: if it already has a PDF, that opens straight
    * into the reader and the timer starts on its own via the openPdf effect
    * above - no separate "select, then open a file" step to remember.
+   *
+   * Only ever reached from the dashboard (see Dashboard.tsx's onEnterPrep),
+   * where backToDashboard has already closed out anything that was open - so
+   * there is never a session still running here to preserve.
    */
   const enterPrep = (target: Prep) => {
     setActivePrep(target.id);
     setPage('workspace');
-
-    // Already mid-session on a file that belongs to this exact prep - leave it
-    // running rather than jumping to whatever the tree lists first.
-    if (openPdf !== null && selected !== null && isInPrep(selected, target.folder)) {
-      setWorkspaceView('reader');
-      return;
-    }
-
     const scoped = treeForPrep(useVault.getState().tree, target, preps);
     const fallback = firstPdf(scoped);
     setSelected(fallback);
     setWorkspaceView(fallback !== null ? 'reader' : 'overview');
   };
 
-  const backToDashboard = () => setPage('dashboard');
+  // Leaving the prep, not just stepping out of the reader within it: closes
+  // whatever's open exactly like the Reader's own "End session" does, so the
+  // save prompt (if the sitting was long enough to log) surfaces on the
+  // dashboard rather than leaving a clock quietly running somewhere unseen.
+  const backToDashboard = () => {
+    endSession();
+    setPage('dashboard');
+  };
 
   const readerReady = openPdf !== null || firstPdf(prepTree) !== null;
 
@@ -194,14 +199,12 @@ export default function App() {
             </button>
           </h1>
           <div className="flex items-center gap-[18px]">
-            {page === 'workspace' && prep !== null && prepSummary !== null && (
-              <div className="tabular hidden items-baseline gap-[14px] text-[11.5px] text-muted sm:flex">
-                <span className="max-w-56 truncate" title={prep.name}>
+            {page === 'workspace' && prep !== null && (
+              <div className="tabular hidden items-baseline gap-3 text-[11.5px] text-muted sm:flex">
+                <span className="max-w-56 truncate font-semibold text-ink" title={prep.name}>
                   {prep.name}
                 </span>
-                <span>{prepSummary.sessions} sessions</span>
-                <span>{prepSummary.notes} notes</span>
-                <span>{today}</span>
+                <PrepActions onDeleted={backToDashboard} />
               </div>
             )}
             <ThemeToggle />
@@ -212,10 +215,10 @@ export default function App() {
 
         {/* Workspace frames its tab row between the thick rule above and a
             thin one below - the pair the header comment describes. The
-            dashboard has no tab row to frame, so it prints only the one
-            rule: a second one bracketing empty space would just read as a
-            stray line, not as a boundary around anything. */}
-        {page === 'workspace' ? (
+            dashboard has no tab row to frame - and, since backToDashboard
+            always closes out any running session first, never a timer to
+            show here either - so it prints only the one rule and stops. */}
+        {page === 'workspace' && (
           <>
             <div className="flex items-center justify-between gap-6 py-[7px]">
               <nav className="flex items-center gap-5">
@@ -238,11 +241,15 @@ export default function App() {
                 >
                   Reader
                 </button>
-                <PrepActions />
               </nav>
 
               <div className="flex shrink-0 items-center gap-4">
-                <TimerHud />
+                {/* The reader draws its own clock at reading size (see
+                    ReaderClock in Reader.tsx) - showing this one at the same
+                    time would be two clocks, two Pause buttons, for one
+                    session. This is the readout for the view the reader
+                    doesn't cover. */}
+                {workspaceView === 'overview' && <TimerHud />}
                 {prepSummary !== null && (
                   <span className="kicker whitespace-nowrap">
                     <span className="tabular">{prepSummary.streak.current}</span> day streak
@@ -253,12 +260,6 @@ export default function App() {
 
             <div className="h-px bg-ink" />
           </>
-        ) : (
-          // Still worth a line for the timer: leaving a session running and
-          // stepping back to the dashboard should not mean losing sight of it.
-          <div className="flex items-center justify-end py-[7px]">
-            <TimerHud />
-          </div>
         )}
       </header>
 

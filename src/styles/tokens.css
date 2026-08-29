@@ -2,7 +2,7 @@
 
 /* Broadsheet: newsprint set for the screen.
  *
- * Near-black Source Serif 4 on paper, cyan as the single interactive spot
+ * Near-black Literata on paper, cyan as the single interactive spot
  * colour, radius 2px, and no boxes - sections are separated by whitespace, and
  * a hairline only where a list genuinely needs bounding. The one place rules
  * print is the thick-thin head pair under the masthead.
@@ -33,11 +33,12 @@
   --color-scrim: #191d2c;
 
   /* One serif family throughout, chrome included - the serif IS the chrome.
-     Monospace is reserved for machine strings: filenames, paths, plan codes,
-     dates, clocks. Tabular figures there are not a style choice; proportional
-     digits jitter as they tick. */
-  --font-body: "Source Serif 4 Variable", Georgia, "Times New Roman", serif;
-  --font-display: "Source Serif 4 Variable", Georgia, "Times New Roman", serif;
+     Literata is built for exactly what this app is for: long stretches of
+     reading. Monospace is reserved for machine strings: filenames, paths,
+     plan codes, dates, clocks. Tabular figures there are not a style choice;
+     proportional digits jitter as they tick. */
+  --font-body: "Literata Variable", Georgia, "Times New Roman", serif;
+  --font-display: "Literata Variable", Georgia, "Times New Roman", serif;
   --font-mono: ui-monospace, Menlo, Consolas, "Courier New", monospace;
 
   /* 2px everywhere. No pills, no large radii - collapsing the whole scale onto
@@ -54,18 +55,20 @@
 
 /* The same eight roles at night, not a second design.
  *
- * #191d2c is the ink in light and the ground in dark - the theme is a straight
- * inversion of that one value, which is why no separate dark palette exists.
- * The accent is the single exception: it lifts to stay legible on the dark
- * ground, where the light-mode cyan would sit under 3:1.
+ * The ground is a neutral grey rather than a mechanical inversion of light
+ * mode's navy ink - #191d2c carries a blue cast that reads as "tinted", not
+ * as the plain dark room a grey asks for. Everything else keeps the light
+ * theme's relationship: text and dividers are still derived from one ink
+ * value, and the accent still lifts to stay legible on the dark ground, where
+ * the light-mode cyan would sit under 3:1.
  *
  * Defined once, under the resolved theme only: src/main.tsx stamps data-theme
  * before first paint and useTheme keeps it in step.
  */
 :root[data-theme="dark"] {
   --color-ink: #f1f0ef;
-  --color-paper: #191d2c;
-  --color-surface: #212739;
+  --color-paper: #1c1c1e;
+  --color-surface: #242426;
 
   --color-divider: rgba(241, 240, 239, 0.16);
   --color-muted: rgba(241, 240, 239, 0.52);
@@ -76,13 +79,13 @@
   --color-on-accent: #111520;
 
   --color-flag: #e58a91;
-  --color-scrim: #05070e;
+  --color-scrim: #0a0a0a;
 }
 
 /* Not a third palette - Dark with its ground dropped to true black for OLED
-   screens, where every lit pixel costs power and #191d2c is still a lit
-   pixel. Text, accent and hairlines are Dark's, unchanged, because the thing
-   being asked for is a blacker room, not a different room. */
+   screens, where every lit pixel costs power and Dark's own grey ground is
+   still a lit pixel. Text, accent and hairlines are Dark's, unchanged,
+   because the thing being asked for is a blacker room, not a different room. */
 :root[data-theme="black"] {
   --color-ink: #f1f0ef;
   --color-paper: #000000;

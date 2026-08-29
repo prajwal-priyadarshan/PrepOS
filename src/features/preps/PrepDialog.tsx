@@ -1,7 +1,8 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react';
-import { newId, type Prep } from '@/lib/model';
+import { isInPrep, newId, type Prep } from '@/lib/model';
 import { folderIsFree, folderSlug } from '@/lib/preps';
 import { useProgress } from '@/store/useProgress';
+import { useSession } from '@/store/useSession';
 import { useVault } from '@/store/useVault';
 import { usePreps } from './usePreps';
 
@@ -13,6 +14,13 @@ interface Props {
    * form to go back to, so it takes the screen and offers no way out.
    */
   onClose?: () => void;
+  /**
+   * Fires instead of onClose after a delete, when the caller needs to react
+   * differently to "the prep is gone" than to "the form was closed" - the
+   * workspace header uses this to step back to the dashboard rather than sit
+   * on a prep that no longer exists.
+   */
+  onDeleted?: () => void;
 }
 
 /**
@@ -26,20 +34,25 @@ interface Props {
  * already sits, so re-pointing it would silently orphan every file rather than
  * move anything - a rename in Explorer is the honest way to do that.
  */
-export function PrepDialog({ prep, onClose }: Props) {
+export function PrepDialog({ prep, onClose, onDeleted }: Props) {
   const preps = usePreps();
   const addPrep = useProgress((s) => s.addPrep);
   const updatePrep = useProgress((s) => s.updatePrep);
+  const removePrep = useProgress((s) => s.removePrep);
   const ensureFolder = useVault((s) => s.ensureFolder);
 
   const editing = prep !== undefined;
   const firstRun = onClose === undefined;
+  // The last prep can be edited but not removed - App.tsx has nothing to show
+  // once there are none, and that screen is a fresh start, not a delete.
+  const onlyPrep = preps.length <= 1;
 
   const [name, setName] = useState(prep?.name ?? '');
   const [folder, setFolder] = useState(prep?.folder ?? '');
   const [folderTouched, setFolderTouched] = useState(false);
   const [targetDate, setTargetDate] = useState(prep?.targetDate ?? '');
   const [busy, setBusy] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const nameRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -84,6 +97,21 @@ export function PrepDialog({ prep, onClose }: Props) {
     };
     addPrep(created);
     onClose?.();
+  };
+
+  /**
+   * Removes the label, not the history: files and logged sessions stay on
+   * disk and in state.json exactly as they are (see removePrep) - only the
+   * prep record itself goes, and a running sitting on one of its files is
+   * settled first so those minutes still land on the prep they were earned
+   * under rather than on whatever becomes active next.
+   */
+  const handleDelete = () => {
+    if (!editing || onlyPrep) return;
+    const session = useSession.getState();
+    if (session.filePath !== null && isInPrep(session.filePath, prep.folder)) session.stop();
+    removePrep(prep.id);
+    (onDeleted ?? onClose)?.();
   };
 
   const fields = (
@@ -142,6 +170,45 @@ export function PrepDialog({ prep, onClose }: Props) {
     </>
   );
 
+  const danger = editing && (
+    <div className="mt-6 border-t border-divider pt-4">
+      {confirmingDelete ? (
+        <div>
+          <p className="text-[12.5px] leading-[1.5] text-soft">
+            Removes {prep.name} from your list. Its folder, files and logged sessions stay exactly
+            where they are &mdash; they just stop being attributed to a prep.
+          </p>
+          <div className="mt-2.5 flex items-center gap-4">
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="rounded-sm border border-flag px-[15px] py-2 text-[13.5px] text-flag transition-colors hover:bg-flag/10"
+            >
+              Yes, delete it
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmingDelete(false)}
+              className="text-[13.5px] text-muted transition-colors hover:text-accent"
+            >
+              Never mind
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setConfirmingDelete(true)}
+          disabled={onlyPrep}
+          title={onlyPrep ? 'Add another prep before removing this one' : undefined}
+          className="text-[13.5px] text-muted transition-colors hover:text-flag disabled:opacity-40 disabled:hover:text-muted"
+        >
+          Delete this prep
+        </button>
+      )}
+    </div>
+  );
+
   const actions = (
     <div className="mt-7 flex items-center justify-between">
       {onClose ? (
@@ -196,6 +263,7 @@ export function PrepDialog({ prep, onClose }: Props) {
             : 'A folder in your vault and a date to count down to. Both can change later.'}
         </p>
         {fields}
+        {danger}
         {actions}
       </form>
     </div>

@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 // One family for the whole app - headings, body and UI chrome alike. The
 // monospace roles take the system stack, so nothing else is bundled.
-import '@fontsource-variable/source-serif-4';
+import '@fontsource-variable/literata';
 import App from './App';
 import { applyTheme, useTheme } from './store/useTheme';
 import './styles/tokens.css';
