@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { formatAccuracy, formatHours, summarise } from '@/lib/stats';
+import { formatHours, summarise } from '@/lib/stats';
 import { studyDay } from '@/lib/studyDay';
 import { useProgress } from '@/store/useProgress';
 import { useActivePrep } from '../preps/usePreps';
@@ -52,15 +52,10 @@ export function PrepStats() {
   return (
     <section>
       <h2 className="m-0 mb-5 text-[21px] font-semibold">{prep.name}</h2>
-      <div className="grid grid-cols-2 gap-y-5 min-[640px]:grid-cols-4">
+      <div className="grid grid-cols-3 gap-y-5">
         <Figure value={formatHours(summary.activeSeconds)} label="Active" />
         <Figure value={String(summary.sessions)} label="Sessions" />
         <Figure value={String(summary.days)} label="Days" />
-        <Figure
-          value={formatAccuracy(summary.accuracy)}
-          label="Accuracy"
-          muted={summary.accuracy === null}
-        />
       </div>
 
       {summary.sections.length > 0 && (
@@ -76,8 +71,6 @@ export function PrepStats() {
                 <span> &middot; </span>
                 {row.sessions}
                 {row.sessions === 1 ? ' session' : ' sessions'}
-                <span> &middot; </span>
-                {formatAccuracy(row.accuracy)}
               </span>
             </li>
           ))}

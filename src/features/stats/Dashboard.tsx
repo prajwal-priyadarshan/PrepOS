@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { countdown } from '@/lib/deadline';
 import type { Prep } from '@/lib/model';
-import { formatAccuracy, formatHours, type Summary, sessionsFor, summarise } from '@/lib/stats';
+import { formatHours, type Summary, sessionsFor, summarise } from '@/lib/stats';
 import { secondsByDay } from '@/lib/streak';
 import { studyDay } from '@/lib/studyDay';
 import { useProgress } from '@/store/useProgress';
@@ -95,7 +95,6 @@ function PrepRow({ prep, lastOpened, summary, onStudy, onEdit }: PrepRowProps) {
       <div className="tabular flex flex-wrap items-center gap-x-[22px] gap-y-1 self-center text-[12.5px] text-soft">
         <span>{formatHours(summary.activeSeconds)} active</span>
         <span>{summary.sessions} sessions</span>
-        <span>{formatAccuracy(summary.accuracy)} accuracy</span>
       </div>
     </div>
   );
@@ -140,15 +139,10 @@ export function Dashboard({ onEnterPrep }: Props) {
     <div className="flex flex-col gap-10">
       <section>
         <h2 className="m-0 mb-[22px] text-[21px] font-semibold">Across every prep</h2>
-        <div className="grid grid-cols-2 gap-y-6 min-[900px]:grid-cols-4">
+        <div className="grid grid-cols-3 gap-y-6">
           <Figure value={formatHours(total.activeSeconds)} label="Active" />
           <Figure value={String(total.sessions)} label="Sessions" />
           <Figure value={String(total.days)} label="Days" />
-          <Figure
-            value={formatAccuracy(total.accuracy)}
-            label="Accuracy"
-            muted={total.accuracy === null}
-          />
         </div>
       </section>
 

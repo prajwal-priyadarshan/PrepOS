@@ -9,8 +9,16 @@
  * counted when the window is visible and the user was active within IDLE_MS.
  */
 
-/** No pointermove / keydown / scroll for this long counts as away. */
-export const IDLE_MS = 90_000;
+/**
+ * No pointermove / keydown / scroll for this long counts as away.
+ *
+ * Generous on purpose: reading a page that already fits the screen is
+ * legitimately quiet for minutes at a time - no scrolling, no page-turn, mouse
+ * left wherever it last was. A threshold tuned for active computer work read
+ * that as idle and froze the clock mid-sitting, which is indistinguishable
+ * from the timer being broken. Five minutes still catches an actual walk-away.
+ */
+export const IDLE_MS = 5 * 60_000;
 
 /** If you have genuinely been going three hours, take the break. */
 export const MAX_SESSION_MS = 3 * 60 * 60 * 1000;

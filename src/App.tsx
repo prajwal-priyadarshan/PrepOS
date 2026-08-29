@@ -183,7 +183,16 @@ export default function App() {
           is bounded by whitespace instead. */}
       <header className="shrink-0 px-[34px] pt-[26px]">
         <div className="flex items-end justify-between gap-6">
-          <h1 className="m-0 text-[30px] font-semibold leading-none tracking-[-0.015em]">PrepOS</h1>
+          <h1 className="m-0 leading-none">
+            <button
+              type="button"
+              onClick={backToDashboard}
+              title="Back to your prep plans"
+              className="text-[30px] font-semibold leading-none tracking-[-0.015em] transition-opacity hover:opacity-80"
+            >
+              PrepOS
+            </button>
+          </h1>
           <div className="flex items-center gap-[18px]">
             {page === 'workspace' && prep !== null && prepSummary !== null && (
               <div className="tabular hidden items-baseline gap-[14px] text-[11.5px] text-muted sm:flex">
@@ -201,54 +210,56 @@ export default function App() {
 
         <div className="mt-3 h-[3px] bg-ink" />
 
-        <div className="flex items-center justify-between gap-6 py-[7px]">
-          {page === 'dashboard' ? (
-            <nav className="flex items-center gap-5">
-              <span className={tab(true)}>Every prep</span>
-            </nav>
-          ) : (
-            <nav className="flex items-center gap-5">
-              <button
-                type="button"
-                onClick={backToDashboard}
-                className="text-[13.5px] text-muted transition-colors hover:text-accent"
-              >
-                &larr; All plans
-              </button>
-              <button
-                type="button"
-                onClick={() => setWorkspaceView('overview')}
-                className={tab(workspaceView === 'overview')}
-              >
-                Overview
-              </button>
-              <button
-                type="button"
-                onClick={openReader}
-                disabled={!readerReady}
-                title={readerReady ? undefined : 'No PDF in this prep yet'}
-                className={[
-                  tab(workspaceView === 'reader'),
-                  'disabled:text-muted disabled:no-underline',
-                ].join(' ')}
-              >
-                Reader
-              </button>
-              <PrepActions />
-            </nav>
-          )}
+        {/* Workspace frames its tab row between the thick rule above and a
+            thin one below - the pair the header comment describes. The
+            dashboard has no tab row to frame, so it prints only the one
+            rule: a second one bracketing empty space would just read as a
+            stray line, not as a boundary around anything. */}
+        {page === 'workspace' ? (
+          <>
+            <div className="flex items-center justify-between gap-6 py-[7px]">
+              <nav className="flex items-center gap-5">
+                <button
+                  type="button"
+                  onClick={() => setWorkspaceView('overview')}
+                  className={tab(workspaceView === 'overview')}
+                >
+                  Overview
+                </button>
+                <button
+                  type="button"
+                  onClick={openReader}
+                  disabled={!readerReady}
+                  title={readerReady ? undefined : 'No PDF in this prep yet'}
+                  className={[
+                    tab(workspaceView === 'reader'),
+                    'disabled:text-muted disabled:no-underline',
+                  ].join(' ')}
+                >
+                  Reader
+                </button>
+                <PrepActions />
+              </nav>
 
-          <div className="flex shrink-0 items-center gap-4">
+              <div className="flex shrink-0 items-center gap-4">
+                <TimerHud />
+                {prepSummary !== null && (
+                  <span className="kicker whitespace-nowrap">
+                    <span className="tabular">{prepSummary.streak.current}</span> day streak
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="h-px bg-ink" />
+          </>
+        ) : (
+          // Still worth a line for the timer: leaving a session running and
+          // stepping back to the dashboard should not mean losing sight of it.
+          <div className="flex items-center justify-end py-[7px]">
             <TimerHud />
-            {page === 'workspace' && prepSummary !== null && (
-              <span className="kicker whitespace-nowrap">
-                <span className="tabular">{prepSummary.streak.current}</span> day streak
-              </span>
-            )}
           </div>
-        </div>
-
-        <div className="h-px bg-ink" />
+        )}
       </header>
 
       {page === 'dashboard' ? (
