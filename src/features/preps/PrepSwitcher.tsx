@@ -39,7 +39,7 @@ export function PrepActions({ onDeleted }: Props) {
         type="button"
         onClick={() => setEditing(true)}
         title={remaining === null ? 'Give this prep a date to count down to' : active.targetDate}
-        className="tabular whitespace-nowrap transition-colors hover:text-accent"
+        className="tabular whitespace-nowrap text-accent transition-opacity hover:opacity-70"
       >
         {remaining === null ? (
           'Set a deadline'

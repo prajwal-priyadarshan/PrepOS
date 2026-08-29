@@ -242,7 +242,13 @@ export class TauriVault implements VaultAdapter {
   }
 
   async remove(path: string): Promise<void> {
-    await remove(this.#abs(path));
+    // recursive: true is what lets this delete a non-empty folder; it is a
+    // no-op for a plain file, so one call handles both.
+    await remove(this.#abs(path), { recursive: true });
+  }
+
+  async rename(from: string, to: string): Promise<void> {
+    await rename(this.#abs(from), this.#abs(to));
   }
 
   async stat(path: string): Promise<FileStat> {

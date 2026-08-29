@@ -125,8 +125,42 @@ export class FakeVault implements VaultAdapter {
   }
 
   remove(path: string): Promise<void> {
-    this.files.delete(path);
+    // Mirrors TauriVault's recursive delete: drop the path itself plus
+    // anything nested under it, whether it names a file or a directory.
+    const prefix = `${path}/`;
+    for (const file of [...this.files.keys()]) {
+      if (file === path || file.startsWith(prefix)) this.files.delete(file);
+    }
+    for (const dir of [...this.dirs]) {
+      if (dir === path || dir.startsWith(prefix)) this.dirs.delete(dir);
+    }
     this.ops.push(`remove ${path}`);
+    return Promise.resolve();
+  }
+
+  rename(from: string, to: string): Promise<void> {
+    const prefix = `${from}/`;
+    for (const file of [...this.files.keys()]) {
+      if (file === from) {
+        const value = this.files.get(file);
+        this.files.delete(file);
+        if (value !== undefined) this.files.set(to, value);
+      } else if (file.startsWith(prefix)) {
+        const value = this.files.get(file);
+        this.files.delete(file);
+        if (value !== undefined) this.files.set(`${to}${file.slice(from.length)}`, value);
+      }
+    }
+    for (const dir of [...this.dirs]) {
+      if (dir === from) {
+        this.dirs.delete(dir);
+        this.dirs.add(to);
+      } else if (dir.startsWith(prefix)) {
+        this.dirs.delete(dir);
+        this.dirs.add(`${to}${dir.slice(from.length)}`);
+      }
+    }
+    this.ops.push(`rename ${from} -> ${to}`);
     return Promise.resolve();
   }
 

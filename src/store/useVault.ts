@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { IMPORTABLE_EXTENSIONS, importInto } from '@/lib/importPath';
-import { type TreeNode, vault } from '@/vault';
+import { joinPath, type TreeNode, vault } from '@/vault';
 
 export type VaultStatus = 'starting' | 'disconnected' | 'connecting' | 'connected';
 
@@ -21,6 +21,10 @@ interface VaultState {
   importFiles: (destDir: string) => Promise<number>;
   /** Create a folder if it is not there yet. Used when a prep is created. */
   ensureFolder: (path: string) => Promise<boolean>;
+  /** Delete a file, or a folder and everything under it. */
+  deleteNode: (path: string) => Promise<boolean>;
+  /** Rename a file or folder in place, keeping it in the same parent. */
+  renameNode: (path: string, newName: string) => Promise<boolean>;
 }
 
 function message(err: unknown): string {
@@ -122,6 +126,50 @@ export const useVault = create<VaultState>((set, get) => ({
     if (!vault.isConnected() || path === '') return true;
     try {
       if (!(await vault.exists(path))) await vault.mkdirp(path);
+      await get().refresh();
+      return true;
+    } catch (err) {
+      set({ error: message(err) });
+      return false;
+    }
+  },
+
+  /**
+   * Deletes whatever is at `path` - a lone file, or a folder and everything
+   * under it. There is no undo: the caller is expected to have confirmed
+   * with the user already (see FileTree's two-step confirm).
+   */
+  async deleteNode(path) {
+    if (!vault.isConnected() || path === '') return false;
+    set({ error: null });
+    try {
+      await vault.remove(path);
+      await get().refresh();
+      return true;
+    } catch (err) {
+      set({ error: message(err) });
+      return false;
+    }
+  },
+
+  /**
+   * Renames a file or folder without moving it to a different parent - the
+   * new name is joined onto the existing directory, not taken as a full path.
+   */
+  async renameNode(path, newName) {
+    if (!vault.isConnected() || path === '') return false;
+    const trimmed = newName.trim();
+    if (trimmed.length === 0) return false;
+    const parent = path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '';
+    const dest = joinPath(parent, trimmed);
+    if (dest === path) return true;
+    set({ error: null });
+    try {
+      if (await vault.exists(dest)) {
+        set({ error: `${trimmed} already exists here.` });
+        return false;
+      }
+      await vault.rename(path, dest);
       await get().refresh();
       return true;
     } catch (err) {

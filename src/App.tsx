@@ -150,6 +150,17 @@ export default function App() {
     setWorkspaceView('overview');
   };
 
+  // A file or folder just got deleted from the tree. If it was open - or, for
+  // a folder, held what was open - closing it the same way endSession does is
+  // the difference between the save prompt firing on real minutes and the
+  // reader sitting on a path that no longer resolves to anything.
+  const onNodeRemoved = (removed: string) => {
+    const affects = (path: string | null) =>
+      path !== null && (path === removed || path.startsWith(`${removed}/`));
+    if (affects(openPdf)) endSession();
+    else if (affects(selected)) setSelected(null);
+  };
+
   const openReader = () => {
     if (openPdf === null) {
       const fallback = firstPdf(prepTree);
@@ -216,8 +227,11 @@ export default function App() {
           </h1>
           <div className="flex items-center gap-[18px]">
             {page === 'workspace' && prep !== null && (
-              <div className="tabular hidden items-baseline gap-3 text-[11.5px] text-muted sm:flex">
-                <span className="max-w-56 truncate font-semibold text-ink" title={prep.name}>
+              <div className="tabular hidden items-center gap-3 text-[11.5px] text-muted sm:flex">
+                <span
+                  className="max-w-56 truncate rounded-sm border border-divider px-2 py-1 text-[10px] font-semibold uppercase leading-none tracking-[0.12em] text-accent"
+                  title={prep.name}
+                >
                   {prep.name}
                 </span>
                 <PrepActions onDeleted={backToDashboard} />
@@ -311,7 +325,12 @@ export default function App() {
               </div>
 
               <nav className="mt-3.5">
-                <FileTree nodes={prepTree} onOpenFile={openFile} selectedPath={selected} />
+                <FileTree
+                  nodes={prepTree}
+                  onOpenFile={openFile}
+                  selectedPath={selected}
+                  onNodeRemoved={onNodeRemoved}
+                />
               </nav>
 
               <div className="mt-3.5">

@@ -78,6 +78,8 @@ export interface VaultAdapter {
   pickFiles(options?: PickFilesOptions): Promise<string[]>;
   /** Copy an absolute outside path to a vault-relative one. */
   importFile(sourceAbsolutePath: string, destPath: string): Promise<void>;
+  /** Move/rename a vault-relative path. Both ends stay inside the vault. */
+  rename(from: string, to: string): Promise<void>;
   /**
    * Hand a file to whatever the OS opens it with.
    *
@@ -89,6 +91,7 @@ export interface VaultAdapter {
   exists(path: string): Promise<boolean>;
   mkdirp(path: string): Promise<void>;
   copyFile(from: string, to: string): Promise<void>;
+  /** Deletes a file, or a folder and everything under it. */
   remove(path: string): Promise<void>;
   stat(path: string): Promise<FileStat>;
 }
