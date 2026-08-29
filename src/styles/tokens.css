@@ -1,47 +1,81 @@
 @import "tailwindcss";
 
-/* Palette (plan S7): cool paper and highlighter, grounded in OMR sheets and
-   sectional clocks. Deliberately not the warm-cream-and-terracotta default. */
+/* Broadsheet: newsprint set for the screen.
+ *
+ * Near-black Source Serif 4 on paper, cyan as the single interactive spot
+ * colour, radius 2px, and no boxes - sections are separated by whitespace, and
+ * a hairline only where a list genuinely needs bounding. The one place rules
+ * print is the thick-thin head pair under the masthead.
+ *
+ * Eight roles, no more. Their names are the design handoff's names so a spec
+ * line and a utility class read as the same thing.
+ */
 @theme {
-  --color-paper: #eeeff3;
-  --color-ink: #161a2c;
-  --color-graphite: #5a6072;
-  --color-marker: #c8e64a;
-  --color-flag: #d66a72;
-  --color-surface: #ffffff;
+  /* ink and paper trade places at night; everything else is derived from them. */
+  --color-ink: #191d2c;
+  --color-paper: #f3f2f2;
+  --color-surface: #eae7e3;
+
+  --color-divider: rgba(25, 29, 44, 0.16);
+  --color-muted: rgba(25, 29, 44, 0.55);
+  --color-soft: rgba(25, 29, 44, 0.72);
+
+  --color-accent: #0088b0;
+  --color-tint: rgba(0, 136, 176, 0.1);
+  /* Text laid on a solid accent fill. Not paper: the dark accent needs dark. */
+  --color-on-accent: #ffffff;
+
+  /* Errors only. The system's second spot colour, spent rarely by design. */
+  --color-flag: #b3123f;
 
   /* Modal backdrop. Its own token rather than ink/40, because ink and paper
      trade places in the dark theme and a backdrop must stay dark in both. */
-  --color-scrim: #161a2c;
+  --color-scrim: #191d2c;
 
-  /* Three type roles, no more.
-     Display: screen titles and big numbers only.
-     Body:    everything prose.
-     Data:    every timer, percentile and count - tabular figures are not a
-              style choice here, proportional digits jitter as they change. */
-  --font-display: "Bricolage Grotesque Variable", system-ui, sans-serif;
-  --font-body: "Public Sans Variable", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+  /* One serif family throughout, chrome included - the serif IS the chrome.
+     Monospace is reserved for machine strings: filenames, paths, plan codes,
+     dates, clocks. Tabular figures there are not a style choice; proportional
+     digits jitter as they tick. */
+  --font-body: "Source Serif 4 Variable", Georgia, "Times New Roman", serif;
+  --font-display: "Source Serif 4 Variable", Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, Menlo, Consolas, "Courier New", monospace;
+
+  /* 2px everywhere. No pills, no large radii - collapsing the whole scale onto
+     one value is what makes that rule impossible to break by reaching for the
+     wrong utility. */
+  --radius-xs: 2px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-2xl: 2px;
+  --radius-3xl: 2px;
 }
 
-/* The same six roles at night, not a second design.
+/* The same eight roles at night, not a second design.
  *
- * ink and paper swap ends of the scale rather than gaining dark-mode variants,
- * so every `bg-ink text-paper` in the app - the selected file, the primary
- * button - keeps meaning "inverted" without a single dark: utility anywhere.
+ * #191d2c is the ink in light and the ground in dark - the theme is a straight
+ * inversion of that one value, which is why no separate dark palette exists.
+ * The accent is the single exception: it lifts to stay legible on the dark
+ * ground, where the light-mode cyan would sit under 3:1.
  *
  * Defined once, under the resolved theme only: src/main.tsx stamps data-theme
- * before first paint and useTheme keeps it in step, so 'system' has already
- * become light or dark by the time this is read. That is what makes one
- * definition site safe.
+ * before first paint and useTheme keeps it in step.
  */
 :root[data-theme="dark"] {
-  --color-paper: #0f1220;
-  --color-ink: #e9ebf2;
-  --color-graphite: #939bb1;
-  --color-marker: #cdea4f;
+  --color-ink: #f1f0ef;
+  --color-paper: #191d2c;
+  --color-surface: #212739;
+
+  --color-divider: rgba(241, 240, 239, 0.16);
+  --color-muted: rgba(241, 240, 239, 0.52);
+  --color-soft: rgba(241, 240, 239, 0.74);
+
+  --color-accent: #3fb6d8;
+  --color-tint: rgba(63, 182, 216, 0.14);
+  --color-on-accent: #111520;
+
   --color-flag: #e58a91;
-  --color-surface: #191d2c;
   --color-scrim: #05070e;
 }
 
@@ -61,6 +95,10 @@
     color: var(--color-ink);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
+    /* The light/dark switch reads as a toggle, not a flicker. */
+    transition:
+      background-color 180ms ease-out,
+      color 180ms ease-out;
   }
 
   body {
@@ -74,6 +112,17 @@
   kbd {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
+  }
+
+  /* Interaction states are themed, never the browser's. A default blue ring on
+     a cyan-and-newsprint page is the one colour the system never uses. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--color-tint);
   }
 
   /* The app is a desktop window, not a document - text selection on chrome
@@ -90,8 +139,49 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* The kicker: the small uppercase label that names a section without spending a
+   heading on it. Used often enough, and specified tightly enough (10px, 0.12em)
+   that repeating four utilities at every call site would be the real noise. */
+@utility kicker {
+  font-size: 10px;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
 
+/* Every dialog in the app fades and settles in rather than snapping into
+   place - a modal that appears mid-motion reads as part of the interface
+   instead of a page swap. */
+@keyframes modal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-backdrop-in {
+  animation: modal-backdrop-in 150ms ease-out;
+}
+
+.animate-card-in {
+  animation: modal-card-in 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {

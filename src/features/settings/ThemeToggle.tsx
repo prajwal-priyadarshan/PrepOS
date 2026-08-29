@@ -1,27 +1,41 @@
-import { themeLabel } from '@/lib/theme';
+import { THEMES, themeLabel } from '@/lib/theme';
 import { useTheme } from '@/store/useTheme';
 
-const GLYPH = { system: '\u25D0', light: '\u2600', dark: '\u263E' } as const;
-
 /**
- * One control, three states, cycled in place.
+ * Two named buttons, not a switch.
  *
- * A three-way segmented control would cost header width that the timer and the
- * counters have a better claim on, and this is a setting touched twice a year.
+ * A sliding track says "one of two states" but never which - the reader has to
+ * learn that right means dark. Naming both and inverting the selected one says
+ * where you are and where you would land in the same glance, which is what a
+ * segmented control is for.
  */
 export function ThemeToggle() {
-  const choice = useTheme((s) => s.choice);
-  const cycle = useTheme((s) => s.cycle);
+  const theme = useTheme((s) => s.theme);
+  const setTheme = useTheme((s) => s.setTheme);
 
   return (
-    <button
-      type="button"
-      onClick={cycle}
-      title={`Theme: ${themeLabel(choice)} - click to change`}
-      aria-label={`Theme: ${themeLabel(choice)}`}
-      className="rounded px-2 py-1 text-xs text-graphite transition-colors hover:bg-graphite/10"
+    <div
+      role="group"
+      aria-label="Theme"
+      className="flex shrink-0 overflow-hidden rounded-sm border border-divider"
     >
-      <span aria-hidden>{GLYPH[choice]}</span> {themeLabel(choice)}
-    </button>
+      {THEMES.map((option) => {
+        const selected = option === theme;
+        return (
+          <button
+            key={option}
+            type="button"
+            onClick={() => setTheme(option)}
+            aria-pressed={selected}
+            className={[
+              'px-[13px] py-1.5 text-xs tracking-[0.04em] transition-colors',
+              selected ? 'bg-ink text-paper' : 'text-muted hover:bg-tint',
+            ].join(' ')}
+          >
+            {themeLabel(option)}
+          </button>
+        );
+      })}
+    </div>
   );
 }

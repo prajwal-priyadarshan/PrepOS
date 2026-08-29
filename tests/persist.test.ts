@@ -3,6 +3,7 @@ import {
   type AppState,
   CURRENT_VERSION,
   DEFAULT_PREP_ID,
+  defaultPrep,
   emptyState,
   newId,
 } from '../src/lib/model';
@@ -21,6 +22,10 @@ import { FakeVault } from './fakeVault';
 
 function populated(): AppState {
   const state = emptyState();
+  // Records name a prep, so a realistic state holds one. emptyState() no longer
+  // invents it: a vault with no preps is one that has not been set up.
+  state.preps.push(defaultPrep());
+  state.activePrepId = DEFAULT_PREP_ID;
   state.sessions.push({
     id: newId(),
     prepId: DEFAULT_PREP_ID,
@@ -245,6 +250,21 @@ describe('migrate onto preps', () => {
     expect(state.preps[0]?.id).toBe(DEFAULT_PREP_ID);
     expect(state.preps[0]?.folder).toBe('');
     expect(state.activePrepId).toBe(DEFAULT_PREP_ID);
+  });
+
+  it('seeds nothing for a vault that was connected and never used', () => {
+    // No records means nothing that needs a prep to belong to, and an empty
+    // `preps` is what makes the app ask what the first one is for. Seeding here
+    // is how every user used to end up inside a CAT countdown.
+    for (const empty of [{}, { version: 1 }, { version: 1, sessions: [], notes: [] }]) {
+      const state = migrate(empty);
+      expect(state.preps).toEqual([]);
+      expect(state.activePrepId).toBe('');
+    }
+  });
+
+  it('still seeds when only one ledger has anything in it', () => {
+    expect(migrate({ version: 1, mocks: [{ id: 'm' }] }).preps).toHaveLength(1);
   });
 
   it('backfills every old record onto that prep', () => {

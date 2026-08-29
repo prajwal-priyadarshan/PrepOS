@@ -45,14 +45,14 @@ export function TimerHud() {
         type="button"
         onClick={togglePause}
         title="Pause or resume (t)"
-        className="rounded px-2 py-1 text-xs text-graphite hover:bg-graphite/10"
+        className="rounded px-2 py-1 text-xs text-graphite transition-colors hover:bg-graphite/10"
       >
         {paused ? 'Resume' : 'Pause'}
       </button>
       <button
         type="button"
         onClick={stop}
-        className="rounded border border-ink px-2 py-1 text-xs font-medium hover:bg-ink hover:text-paper"
+        className="rounded border border-ink px-2 py-1 text-xs font-medium transition-colors hover:bg-ink hover:text-paper"
       >
         End session
       </button>

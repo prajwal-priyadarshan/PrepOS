@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createNote, DEFAULT_PREP_ID, emptyState } from '../src/lib/model';
+import { createNote, DEFAULT_PREP_ID, defaultPrep, emptyState } from '../src/lib/model';
 import { deserialise, migrate, serialise } from '../src/lib/persist';
 
 describe('createNote', () => {
@@ -61,6 +61,8 @@ describe('notes in persisted state', () => {
   it('survives a write and read', () => {
     const state = {
       ...emptyState(),
+      preps: [defaultPrep()],
+      activePrepId: DEFAULT_PREP_ID,
       notes: [
         createNote({
           prepId: DEFAULT_PREP_ID,

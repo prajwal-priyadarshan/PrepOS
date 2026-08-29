@@ -1,60 +1,63 @@
 import { useState } from 'react';
-import { daysToTarget } from '@/lib/exam';
-import { useProgress } from '@/store/useProgress';
-import { NewPrepDialog } from './NewPrepDialog';
-import { useActivePrep, usePreps } from './usePreps';
+import { countdown } from '@/lib/deadline';
+import { PrepDialog } from './PrepDialog';
+import { useActivePrep } from './usePreps';
 
 /**
- * What you are preparing for, and how long is left of it.
+ * The two prep actions that live in the masthead's action row.
  *
- * The countdown moved here from a hard-coded CAT constant: a prep with no
- * target date simply does not show one, which is the honest rendering of
- * open-ended prep rather than a fake deadline.
+ * Which prep is active is no longer chosen here: the Prep plans rows on the
+ * dashboard are the switcher, so picking a prep and reading how it is going are
+ * the same click rather than two. What is left is making a new prep, and the
+ * one thing about the active prep the header should always answer - how long is
+ * left of it.
+ *
+ * The countdown reads off the active prep rather than a hard-coded exam date: a
+ * prep with no deadline offers to set one instead of showing a fake date, and a
+ * prep whose date has passed says so rather than counting through negatives.
  */
-export function PrepSwitcher() {
-  const preps = usePreps();
+export function PrepActions() {
   const active = useActivePrep();
-  const activeId = useProgress((s) => s.state.activePrepId);
-  const setActivePrep = useProgress((s) => s.setActivePrep);
-  const [creating, setCreating] = useState(false);
+  const [dialog, setDialog] = useState<'new' | 'edit' | null>(null);
 
-  const remaining = active?.targetDate === undefined ? null : daysToTarget(active.targetDate);
+  const remaining = active?.targetDate === undefined ? null : countdown(active.targetDate);
 
   return (
     <>
-      <div className="flex items-center gap-3">
-        <select
-          value={activeId}
-          onChange={(e) => setActivePrep(e.target.value)}
-          aria-label="Active prep"
-          className="max-w-48 rounded border border-graphite/30 bg-surface px-2 py-1 text-xs"
-        >
-          {preps.map((prep) => (
-            <option key={prep.id} value={prep.id}>
-              {prep.name}
-            </option>
-          ))}
-        </select>
+      <button
+        type="button"
+        onClick={() => setDialog('new')}
+        title="New prep"
+        className="text-[13.5px] text-muted transition-colors hover:text-accent"
+      >
+        + Prep
+      </button>
 
-        <button
-          type="button"
-          onClick={() => setCreating(true)}
-          title="New prep"
-          className="rounded px-1.5 py-1 text-xs text-graphite hover:bg-graphite/10"
-        >
-          + Prep
-        </button>
-
-        {remaining !== null && (
-          <span className="whitespace-nowrap text-xs text-graphite">
-            <span className="tabular text-ink">{remaining}</span>
-            {remaining === 1 ? ' day to ' : ' days to '}
-            {active?.name}
-          </span>
+      <button
+        type="button"
+        onClick={() => setDialog('edit')}
+        disabled={active === null}
+        title={
+          remaining === null
+            ? 'Give this prep a date to count down to'
+            : (active?.targetDate ?? undefined)
+        }
+        className="whitespace-nowrap text-[13.5px] text-muted transition-colors hover:text-accent disabled:opacity-40"
+      >
+        {remaining === null ? (
+          'Set a deadline'
+        ) : (
+          <>
+            {remaining.days !== null && <span className="tabular text-ink">{remaining.days} </span>}
+            {remaining.label}
+          </>
         )}
-      </div>
+      </button>
 
-      {creating && <NewPrepDialog onClose={() => setCreating(false)} />}
+      {dialog === 'new' && <PrepDialog onClose={() => setDialog(null)} />}
+      {dialog === 'edit' && active !== null && (
+        <PrepDialog prep={active} onClose={() => setDialog(null)} />
+      )}
     </>
   );
 }

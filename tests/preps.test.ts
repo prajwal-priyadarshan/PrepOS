@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_PREP_ID,
+  defaultPrep,
   emptyState,
   GENERAL_SECTION,
   isInPrep,
@@ -100,22 +101,42 @@ describe('folderIsFree', () => {
   });
 });
 
+/** What a set-up vault holds: one prep, active. */
+function withDefaultPrep() {
+  return { ...emptyState(), preps: [defaultPrep()], activePrepId: DEFAULT_PREP_ID };
+}
+
+describe('emptyState', () => {
+  it('names no prep at all, so the app knows to ask for one', () => {
+    const state = emptyState();
+    expect(state.preps).toEqual([]);
+    expect(state.activePrepId).toBe('');
+    expect(activePrepOf(state)).toBeNull();
+  });
+
+  it('does not seed an exam nobody chose', () => {
+    // The regression this guards: 'CAT 2027' with a hard-coded November date,
+    // handed to every user of an app that is not a CAT app.
+    expect(defaultPrep().targetDate).toBeUndefined();
+  });
+});
+
 describe('activePrepOf', () => {
   it('finds the prep in force', () => {
-    expect(activePrepOf(emptyState())?.id).toBe(DEFAULT_PREP_ID);
+    expect(activePrepOf(withDefaultPrep())?.id).toBe(DEFAULT_PREP_ID);
   });
 
   it('is null rather than wrong when the id is stale', () => {
-    const state = { ...emptyState(), activePrepId: 'gone' };
+    const state = { ...withDefaultPrep(), activePrepId: 'gone' };
     expect(activePrepOf(state)).toBeNull();
   });
 });
 
 describe('prepById / prepName', () => {
   it('names a known prep and labels an unknown one', () => {
-    const state = emptyState();
-    expect(prepById(state, DEFAULT_PREP_ID)?.name).toBe('CAT 2027');
-    expect(prepName(state, DEFAULT_PREP_ID)).toBe('CAT 2027');
+    const state = withDefaultPrep();
+    expect(prepById(state, DEFAULT_PREP_ID)?.name).toBe(defaultPrep().name);
+    expect(prepName(state, DEFAULT_PREP_ID)).toBe(defaultPrep().name);
     expect(prepName(state, 'gone')).toBe('Unfiled');
   });
 });

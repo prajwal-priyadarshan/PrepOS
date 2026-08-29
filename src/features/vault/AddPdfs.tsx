@@ -15,7 +15,8 @@ export function AddPdfs() {
   const importPdfs = useVault((s) => s.importPdfs);
   const prep = useActivePrep();
   // Only folders inside the active prep: material for next month's endsem has
-  // no business landing in the CAT tree because a stale option was selected.
+  // no business landing in another prep's tree because a stale option was
+  // still selected when the prep was switched.
   const dirs = usePrepDestinations();
 
   const [dest, setDest] = useState('');

@@ -2624,6 +2624,8 @@ dependencies = [
  "tauri-plugin-opener",
  "tauri-plugin-persisted-scope",
  "tauri-plugin-store",
+ "webview2-com",
+ "windows",
 ]
 
 [[package]]

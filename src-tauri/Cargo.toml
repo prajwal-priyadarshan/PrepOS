@@ -23,3 +23,10 @@ tauri-plugin-persisted-scope = "2"
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+
+# Lets the camera/mic permission handler below talk to WebView2's COM
+# interfaces directly. Windows-only: wry already pulls both in on this
+# target, so this pins versions rather than adding new code to the tree.
+[target.'cfg(windows)'.dependencies]
+webview2-com = "0.38"
+windows = "0.61"

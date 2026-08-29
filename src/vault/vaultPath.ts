@@ -2,7 +2,7 @@ import { load, type Store } from '@tauri-apps/plugin-store';
 
 /**
  * One key: where the vault is. That is genuinely all that needs remembering
- * outside the vault itself - everything else lives in .catprep/state.json, so
+ * outside the vault itself - everything else lives in .prepos/state.json, so
  * pointing the app at a folder is enough to recover a full history.
  */
 const STORE_FILE = 'prepos.settings.json';

@@ -6,7 +6,7 @@ import { GENERAL_SECTION, type Prep, type Section } from './model';
  *
  * Pure tree surgery, kept out of the store so the awkward case - a prep rooted
  * at the vault itself, with other preps nested inside it - is testable rather
- * than discovered as another prep's PDFs showing up in the CAT tree.
+ * than discovered as one prep's PDFs showing up in another prep's tree.
  */
 
 /** The nodes at `folder`, or the whole tree when it is ''. */

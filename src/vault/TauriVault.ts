@@ -15,10 +15,12 @@ import {
 } from '@tauri-apps/plugin-fs';
 import { openPath } from '@tauri-apps/plugin-opener';
 import {
+  APP_DIR,
   type AppendHandle,
   type FileStat,
   isIgnored,
   joinPath,
+  LEGACY_APP_DIR,
   type PickFilesOptions,
   SCAFFOLD_DIRS,
   type TreeNode,
@@ -51,10 +53,10 @@ export class TauriVault implements VaultAdapter {
     const picked = await openDialog({
       directory: true,
       multiple: false,
-      title: 'Choose your CAT vault folder',
+      title: 'Choose your vault folder',
       // Without this the dialog grants a NON-recursive scope: the vault root and
-      // one level below it. '.catprep' would be allowed but '.catprep/backups'
-      // and every 'DILR/whatever.pdf' denied. Costs an evening to find later.
+      // one level below it. '.prepos' would be allowed but '.prepos/backups'
+      // and every 'DBMS/whatever.pdf' denied. Costs an evening to find later.
       recursive: true,
     });
     if (picked === null) return null;
@@ -101,9 +103,28 @@ export class TauriVault implements VaultAdapter {
   }
 
   async #scaffold(): Promise<void> {
+    await this.#adoptLegacyDir();
     for (const dir of SCAFFOLD_DIRS) {
       if (!(await this.exists(dir))) await this.mkdirp(dir);
     }
+  }
+
+  /**
+   * Carry a CAT-era vault across to the new bookkeeping folder.
+   *
+   * A vault written while this app was CAT-only keeps its whole history in
+   * '.catprep'. Moving it is the only acceptable answer: creating an empty
+   * '.prepos' beside it would open to a blank app with a year of work still on
+   * disk, which reads as data loss and is the hardest kind to notice.
+   *
+   * Deliberately not caught. A rename we cannot do means a vault we cannot
+   * write, and connect() already refuses to remember one of those - a visible
+   * error beats a silent fresh start.
+   */
+  async #adoptLegacyDir(): Promise<void> {
+    if (await this.exists(APP_DIR)) return;
+    if (!(await this.exists(LEGACY_APP_DIR))) return;
+    await rename(this.#abs(LEGACY_APP_DIR), this.#abs(APP_DIR));
   }
 
   async listDir(path: string): Promise<TreeNode[]> {

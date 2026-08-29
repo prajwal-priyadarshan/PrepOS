@@ -51,13 +51,17 @@ export function migrate(data: unknown): AppState {
   // A vault written before preps existed had exactly one, unnamed: the vault
   // itself. Seeding it here, with a fixed id, is what lets every record from
   // then still belong somewhere.
+  //
+  // Only when there is something to attach, though. An empty file - a vault
+  // connected and never used - stays empty, and an empty `preps` is what makes
+  // the app ask what the first prep is for rather than inventing one.
   const preps: Prep[] = asArray<unknown>(raw.preps).filter(isPrep);
-  const seeded = preps.length > 0 ? preps : [defaultPrep()];
+  const seeded = preps.length > 0 ? preps : hasTaggedRecords(raw) ? [defaultPrep()] : [];
   const fallbackPrepId = seeded[0]?.id ?? DEFAULT_PREP_ID;
   const activePrepId =
     typeof raw.activePrepId === 'string' && seeded.some((p) => p.id === raw.activePrepId)
       ? raw.activePrepId
-      : fallbackPrepId;
+      : (seeded[0]?.id ?? '');
 
   return {
     version: CURRENT_VERSION,
@@ -74,6 +78,13 @@ export function migrate(data: unknown): AppState {
       (d): d is string => typeof d === 'string',
     ),
   };
+}
+
+/** The ledgers whose rows each name a prep, and so need one to exist. */
+const TAGGED_LEDGERS = ['sessions', 'reading', 'notes', 'errors', 'mocks', 'recordings'] as const;
+
+function hasTaggedRecords(raw: Record<string, unknown>): boolean {
+  return TAGGED_LEDGERS.some((key) => asArray(raw[key]).length > 0);
 }
 
 /**

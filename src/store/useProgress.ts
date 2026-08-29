@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 import {
   type AppState,
+  applyPrepEdit,
   type ErrorEntry,
   emptyState,
   type MockResult,
   type NoteEntry,
   type Prep,
+  type PrepEdit,
   type ReadingEntry,
   type Recording,
   type StudySession,
@@ -42,7 +44,8 @@ interface ProgressState {
   removeNote: (id: string) => void;
 
   addPrep: (prep: Prep) => void;
-  updatePrep: (id: string, fields: Partial<Omit<Prep, 'id'>>) => void;
+  /** An absent key is left alone, an undefined one removed. See PrepEdit. */
+  updatePrep: (id: string, edit: PrepEdit) => void;
   setActivePrep: (id: string) => void;
   /** Forgets the prep, never its records - they stay, tagged and countable. */
   removePrep: (id: string) => void;
@@ -106,11 +109,11 @@ export const useProgress = create<ProgressState>((set, get) => {
       commit({ ...state, preps: [...state.preps, prep], activePrepId: prep.id });
     },
 
-    updatePrep(id, fields) {
+    updatePrep(id, edit) {
       const state = get().state;
       commit({
         ...state,
-        preps: state.preps.map((prep) => (prep.id === id ? { ...prep, ...fields } : prep)),
+        preps: state.preps.map((prep) => (prep.id === id ? applyPrepEdit(prep, edit) : prep)),
       });
     },
 

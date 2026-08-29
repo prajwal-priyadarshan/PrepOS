@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * M1 spike, not the recorder.
+ * Preflight for the recorder, not the recorder itself.
  *
  * Tauri 2.11.5 does not expose Builder::on_permission_request (it exists only on
  * tauri's dev branch), and wry's default WebView2 permission handler auto-allows
- * clipboard alone. So whether getUserMedia works here is an open question that
- * must be answered before the recorder is built on top of it, not after.
- *
- * If this fails, the fallback is a PermissionRequested handler installed through
- * with_webview() + the webview2-com crate.
+ * clipboard alone. src-tauri/src/lib.rs installs its own PermissionRequested
+ * handler via with_webview() + webview2-com to grant camera and microphone
+ * without asking, so this only ever prompts on platforms other than Windows.
  */
 
 type Result =
@@ -70,7 +68,7 @@ export function CameraSpike() {
         <div>
           <h2 className="font-display text-sm font-semibold">Camera check</h2>
           <p className="mt-0.5 text-xs text-graphite">
-            Answers whether the recorder is buildable, before M6 depends on it.
+            Confirms your camera and microphone are ready before you record a session.
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
@@ -121,8 +119,8 @@ export function CameraSpike() {
           </p>
           <p className="mt-1 text-xs text-graphite">{result.message}</p>
           <p className="mt-2 text-xs text-graphite">
-            Fallback: install a PermissionRequested handler via with_webview() and the webview2-com
-            crate.
+            Check Windows Settings &rsaquo; Privacy &amp; security &rsaquo; Camera (and Microphone)
+            and make sure desktop apps are allowed access.
           </p>
         </div>
       )}

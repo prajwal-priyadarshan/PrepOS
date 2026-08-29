@@ -6,7 +6,7 @@
  * not portability, it is that filesystem code stays independently testable and
  * plugin API churn cannot spread through the app.
  *
- * Paths are always vault-relative with forward slashes ('QA/Arithmetic/set-3.pdf').
+ * Paths are always vault-relative with forward slashes ('DBMS/Indexing/notes.pdf').
  * Resolution against the vault root happens inside the adapter and nowhere else.
  */
 
@@ -93,23 +93,30 @@ export interface VaultAdapter {
   stat(path: string): Promise<FileStat>;
 }
 
-/** Folders created on first connect. The app reads whatever is there anyway. */
-export const SCAFFOLD_DIRS = [
-  '.catprep',
-  '.catprep/backups',
-  'VARC',
-  'DILR',
-  'QA',
-  'Mocks',
-  'Speaking',
-] as const;
+/** Our own bookkeeping, named for the app rather than for one exam. */
+export const APP_DIR = '.prepos';
 
-export const STATE_PATH = '.catprep/state.json';
-export const BACKUP_DIR = '.catprep/backups';
+/** What that folder was called while this was a CAT-only app. Renamed on
+ *  connect - see TauriVault#adoptLegacyDir. */
+export const LEGACY_APP_DIR = '.catprep';
+
+/**
+ * Folders created on first connect: ours, and nothing else.
+ *
+ * There used to be VARC/DILR/QA/Mocks/Speaking here. A vault for a DBMS endsem
+ * or an SDE interview does not want those, and sections are read from whatever
+ * folders exist - so scaffolding subject folders was the app deciding what the
+ * user is studying. It no longer does.
+ */
+export const SCAFFOLD_DIRS = [APP_DIR, `${APP_DIR}/backups`] as const;
+
+export const STATE_PATH = `${APP_DIR}/state.json`;
+export const BACKUP_DIR = `${APP_DIR}/backups`;
 
 /** Skipped when walking the tree - noise, or our own bookkeeping. */
 const IGNORED = new Set([
-  '.catprep',
+  APP_DIR,
+  LEGACY_APP_DIR,
   '.git',
   'node_modules',
   '$RECYCLE.BIN',

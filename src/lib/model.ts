@@ -1,4 +1,3 @@
-import { EXAM_DAY } from './exam';
 import { studyDay } from './studyDay';
 
 /**
@@ -23,7 +22,7 @@ export const GENERAL_SECTION = 'GENERAL';
 export interface Prep {
   id: string;
   name: string;
-  /** Vault-relative. '' means the whole vault, which is where CAT started. */
+  /** Vault-relative. '' means the whole vault, which is what a pre-preps vault was. */
   folder: string;
   /** 'YYYY-MM-DD'. Absent for open-ended prep with no date to count down to. */
   targetDate?: string;
@@ -33,13 +32,52 @@ export interface Prep {
 /**
  * The prep every pre-existing record belongs to.
  *
- * A fixed id rather than a generated one: it keeps emptyState() deterministic,
- * and makes the migration that backfills it idempotent.
+ * Migration only. A fresh vault starts with no preps at all and asks what the
+ * first one is for - seeding a named exam here is how the app was CAT-shaped in
+ * the first place. The id is fixed rather than generated so the backfill that
+ * uses it stays idempotent.
  */
 export const DEFAULT_PREP_ID = 'prep-default';
 
+/** Deliberately unnamed and open-ended: it is whatever the user was already
+ *  doing before preps existed, and both fields are theirs to correct. */
 export function defaultPrep(): Prep {
-  return { id: DEFAULT_PREP_ID, name: 'CAT 2027', folder: '', targetDate: EXAM_DAY };
+  return { id: DEFAULT_PREP_ID, name: 'My prep', folder: '' };
+}
+
+/**
+ * A change to a prep.
+ *
+ * A key that is absent leaves the field alone; a key present and undefined
+ * removes it. The distinction is only expressible because
+ * exactOptionalPropertyTypes is on, and it is the whole reason this type exists
+ * instead of a plain Partial: clearing a deadline - going back to open-ended
+ * prep - has to mean something different from not touching it.
+ */
+export interface PrepEdit {
+  name?: string;
+  folder?: string;
+  targetDate?: string | undefined;
+  archived?: boolean | undefined;
+}
+
+export function applyPrepEdit(prep: Prep, edit: PrepEdit): Prep {
+  const next: Prep = {
+    ...prep,
+    ...(edit.name !== undefined ? { name: edit.name } : {}),
+    ...(edit.folder !== undefined ? { folder: edit.folder } : {}),
+  };
+  // Deleted rather than set to undefined so the key leaves the written JSON
+  // too, and a cleared deadline reads the same on reload as one never set.
+  if ('targetDate' in edit) {
+    if (edit.targetDate === undefined) delete next.targetDate;
+    else next.targetDate = edit.targetDate;
+  }
+  if ('archived' in edit) {
+    if (edit.archived === undefined) delete next.archived;
+    else next.archived = edit.archived;
+  }
+  return next;
 }
 
 export function isPrep(value: unknown): value is Prep {
@@ -151,11 +189,18 @@ export interface AppState {
 
 export const CURRENT_VERSION = 2 as const;
 
+/**
+ * No preps, and no active one.
+ *
+ * An empty `preps` is the signal that nothing has been set up yet - the app
+ * shows the first-prep screen instead of the workspace. Seeding a placeholder
+ * here would put the user inside someone else's exam on first launch.
+ */
 export function emptyState(): AppState {
   return {
     version: CURRENT_VERSION,
-    preps: [defaultPrep()],
-    activePrepId: DEFAULT_PREP_ID,
+    preps: [],
+    activePrepId: '',
     sessions: [],
     reading: [],
     notes: [],

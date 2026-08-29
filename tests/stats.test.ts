@@ -140,7 +140,7 @@ describe('formatHours', () => {
 
 describe('formatAccuracy', () => {
   it('shows a dash rather than a misleading zero', () => {
-    expect(formatAccuracy(null)).toBe('-');
+    expect(formatAccuracy(null)).toBe('—');
     expect(formatAccuracy(0.75)).toBe('75%');
     expect(formatAccuracy(1)).toBe('100%');
   });

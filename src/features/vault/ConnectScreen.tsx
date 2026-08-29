@@ -1,22 +1,21 @@
-import { daysToTarget, EXAM_DAY } from '@/lib/exam';
 import { useVault } from '@/store/useVault';
+import { STATE_PATH } from '@/vault';
 import { ThemeToggle } from '../settings/ThemeToggle';
 
 export function ConnectScreen() {
   const connect = useVault((s) => s.connect);
   const status = useVault((s) => s.status);
   const error = useVault((s) => s.error);
-  const remaining = daysToTarget(EXAM_DAY);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-paper px-6 text-ink">
       <div className="w-full max-w-md">
         <h1 className="font-display text-3xl font-semibold tracking-tight">PrepOS</h1>
         <p className="mt-3 text-sm leading-relaxed text-graphite">
-          Point this at the folder your CAT material lives in. It reads whatever is already there
-          &mdash; nothing is moved or renamed. Everything it records goes into{' '}
-          <span className="tabular">.catprep/state.json</span> inside that same folder, so the
-          folder is the backup.
+          Point this at the folder your study material lives in &mdash; one exam, several, or
+          everything you are preparing for. It reads whatever is already there; nothing is moved or
+          renamed. Everything it records goes into <span className="tabular">{STATE_PATH}</span>{' '}
+          inside that same folder, so the folder is the backup.
         </p>
 
         <button
@@ -35,10 +34,7 @@ export function ConnectScreen() {
         )}
 
         <div className="mt-8 flex items-baseline justify-between border-t border-graphite/20 pt-4">
-          <p className="text-xs text-graphite">
-            <span className="tabular">{remaining}</span> days to CAT &middot;{' '}
-            <span className="tabular">{EXAM_DAY}</span>
-          </p>
+          <p className="text-xs text-graphite">You choose the preps and their deadlines next.</p>
           <ThemeToggle />
         </div>
       </div>

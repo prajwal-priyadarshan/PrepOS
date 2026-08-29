@@ -103,6 +103,7 @@ export function formatHours(seconds: number): string {
   return h === 0 ? `${m}m` : `${h}h ${m}m`;
 }
 
+/** An em dash for 'nothing attempted yet' - not 0%, which would read as failure. */
 export function formatAccuracy(accuracy: number | null): string {
-  return accuracy === null ? '-' : `${Math.round(accuracy * 100)}%`;
+  return accuracy === null ? '—' : `${Math.round(accuracy * 100)}%`;
 }

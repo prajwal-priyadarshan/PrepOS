@@ -14,9 +14,10 @@ export function prepName(state: AppState, id: string): string {
 }
 
 /**
- * A folder name from a prep name: 'Amazon SDE interview' -> 'Amazon-SDE-interview'.
+ * A folder name from a typed one: 'Amazon SDE interview' -> 'Amazon-SDE-interview'.
  *
- * Only a suggestion - the dialog lets it be edited - but it has to be safe on
+ * Used for prep folders and for the sections inside them. Only a suggestion
+ * where the dialog lets it be edited - but either way it has to be safe on
  * Windows, where a colon or a question mark makes a folder that cannot be
  * created and an error that does not say why.
  */
