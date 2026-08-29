@@ -215,3 +215,22 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* The theme toggle's circular reveal, driven from ThemeToggle.tsx via
+   Element.animate() on ::view-transition-new(root). The browser's own
+   cross-fade is switched off here so the only motion on screen is the one
+   circle growing from the button - a second animation layered underneath
+   would read as a flicker competing with the sweep. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 0;
+}
+
+::view-transition-new(root) {
+  z-index: 1;
+}

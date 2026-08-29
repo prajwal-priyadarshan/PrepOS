@@ -71,9 +71,15 @@ export default function App() {
 
   const [page, setPage] = useState<Page>('dashboard');
   const [workspaceView, setWorkspaceView] = useState<WorkspaceView>('overview');
+  // What Overview is currently showing in its content pane.
   const [selected, setSelected] = useState<string | null>(null);
+  // The PDF the timer is actually running against - deliberately its own
+  // state, not derived from `selected`. Peeking at a recording or a slide
+  // deck while a PDF session runs changes what's previewed without touching
+  // this, so the session survives the peek; only opening a different PDF, or
+  // ending the sitting outright, changes it. See openFile below.
+  const [openPdf, setOpenPdf] = useState<string | null>(null);
 
-  const openPdf = selected !== null && isPdf(selected) ? selected : null;
   const today = studyDay(new Date());
   // The workspace header answers for the prep you're inside, not the account -
   // the same reason NotesPanel and the file tree are scoped, one level up.
@@ -126,13 +132,21 @@ export default function App() {
   const openFile = (path: string) => {
     setSelected(path);
     // The reader renders PDFs and nothing else. Anything else stays on
-    // Overview, where ExternalFile offers to hand it to the app that owns it.
-    setWorkspaceView(isPdf(path) ? 'reader' : 'overview');
+    // Overview, where ExternalFile offers to hand it to the app that owns it -
+    // and, since it isn't a PDF, it has nothing to do with whatever the timer
+    // is currently running against.
+    if (isPdf(path)) {
+      setOpenPdf(path);
+      setWorkspaceView('reader');
+    } else {
+      setWorkspaceView('overview');
+    }
   };
 
   // Closing the file is what ends the session and raises the save modal.
   const endSession = () => {
     setSelected(null);
+    setOpenPdf(null);
     setWorkspaceView('overview');
   };
 
@@ -141,6 +155,7 @@ export default function App() {
       const fallback = firstPdf(prepTree);
       if (fallback === null) return;
       setSelected(fallback);
+      setOpenPdf(fallback);
     }
     setWorkspaceView('reader');
   };
@@ -161,6 +176,7 @@ export default function App() {
     const scoped = treeForPrep(useVault.getState().tree, target, preps);
     const fallback = firstPdf(scoped);
     setSelected(fallback);
+    setOpenPdf(fallback);
     setWorkspaceView(fallback !== null ? 'reader' : 'overview');
   };
 

@@ -1,5 +1,42 @@
+import type { MouseEvent } from 'react';
 import { nextTheme, type Theme, themeLabel } from '@/lib/theme';
+import { maxRadius } from '@/lib/viewTransition';
 import { useTheme } from '@/store/useTheme';
+
+/** Long enough to read as a sweep, short enough that the button still feels
+ *  instant rather than like it is waiting on something. */
+const REVEAL_MS = 550;
+
+/**
+ * The new theme grows in from wherever the button was, rather than the whole
+ * page just changing colour at once - a click has a location, and the switch
+ * reads as caused by it instead of as a global flicker.
+ *
+ * Feature-detected, not polyfilled: startViewTransition is Chromium-only for
+ * now (fine - this ships inside a WebView2 shell), and reduced-motion turns
+ * it off entirely rather than swapping in a smaller animation, because the
+ * request there is no motion, not less of it.
+ */
+function switchTheme(event: MouseEvent<HTMLButtonElement>, cycle: () => void) {
+  const supported = typeof document.startViewTransition === 'function';
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!supported || reduceMotion) {
+    cycle();
+    return;
+  }
+
+  const x = event.clientX;
+  const y = event.clientY;
+  const radius = maxRadius(x, y, window.innerWidth, window.innerHeight);
+
+  const transition = document.startViewTransition(() => cycle());
+  void transition.ready.then(() => {
+    document.documentElement.animate(
+      { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+      { duration: REVEAL_MS, easing: 'ease-in-out', pseudoElement: '::view-transition-new(root)' },
+    );
+  });
+}
 
 /**
  * One button that cycles, not a control per theme.
@@ -20,7 +57,7 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
-      onClick={cycle}
+      onClick={(e) => switchTheme(e, cycle)}
       title={`Theme: ${themeLabel(theme)}`}
       aria-label={`Theme: ${themeLabel(theme)}. Switch to ${themeLabel(nextTheme(theme))}.`}
       className="flex shrink-0 items-center justify-center rounded-sm border border-divider p-1.5 text-muted transition-colors hover:bg-tint hover:text-ink"
