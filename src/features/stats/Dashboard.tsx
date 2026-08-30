@@ -139,10 +139,11 @@ export function Dashboard({ onEnterPrep }: Props) {
     <div className="flex flex-col gap-10">
       <section>
         <h2 className="m-0 mb-[22px] text-[21px] font-semibold">Across every prep</h2>
-        <div className="grid grid-cols-3 gap-y-6">
-          <Figure value={formatHours(total.activeSeconds)} label="Active" />
-          <Figure value={String(total.sessions)} label="Sessions" />
-          <Figure value={String(total.days)} label="Days" />
+        <div className="grid grid-cols-2 gap-y-6 sm:grid-cols-4">
+          <Figure value={formatHours(dailyTotals.get(today) ?? 0)} label="Today" />
+          <Figure value={formatHours(total.activeSeconds)} label="Active total" muted />
+          <Figure value={String(total.sessions)} label="Sessions" muted />
+          <Figure value={String(total.days)} label="Days" muted />
         </div>
       </section>
 

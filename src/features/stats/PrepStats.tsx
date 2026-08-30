@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { formatHours, summarise } from '@/lib/stats';
+import { formatHours, sessionsFor, summarise } from '@/lib/stats';
+import { secondsByDay } from '@/lib/streak';
 import { studyDay } from '@/lib/studyDay';
 import { useProgress } from '@/store/useProgress';
 import { useActivePrep } from '../preps/usePreps';
@@ -47,15 +48,23 @@ export function PrepStats() {
     [state, prep, today],
   );
 
+  // Today's own bucket, not folded into the running total below it - a day
+  // with nothing yet should read as 0m, not as whatever was banked last week.
+  const todaySeconds = useMemo(
+    () => (prep === null ? 0 : (secondsByDay(sessionsFor(state, prep.id)).get(today) ?? 0)),
+    [state, prep, today],
+  );
+
   if (prep === null || summary === null) return null;
 
   return (
     <section>
       <h2 className="m-0 mb-5 text-[21px] font-semibold">{prep.name}</h2>
-      <div className="grid grid-cols-3 gap-y-5">
-        <Figure value={formatHours(summary.activeSeconds)} label="Active" />
-        <Figure value={String(summary.sessions)} label="Sessions" />
-        <Figure value={String(summary.days)} label="Days" />
+      <div className="grid grid-cols-2 gap-y-5 sm:grid-cols-4">
+        <Figure value={formatHours(todaySeconds)} label="Today" />
+        <Figure value={formatHours(summary.activeSeconds)} label="Active total" muted />
+        <Figure value={String(summary.sessions)} label="Sessions" muted />
+        <Figure value={String(summary.days)} label="Days" muted />
       </div>
 
       {summary.sections.length > 0 && (

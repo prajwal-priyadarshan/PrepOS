@@ -206,6 +206,26 @@
   animation: modal-card-in 180ms ease-out;
 }
 
+/* A page turn fades and settles the same way, at reading distance rather
+   than dialog distance: the page still has to remount from scratch each
+   turn (see Reader.tsx), but arriving with a small fade and rise instead of
+   just popping into place is what keeps that remount from reading as a
+   flash cut. */
+@keyframes page-turn-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-in {
+  animation: page-turn-in 160ms ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
