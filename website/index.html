@@ -31,7 +31,7 @@
   </script>
 </head>
 <body>
-  <header class="site">
+  <header class="site" id="site-header">
     <div class="wrap site-head">
       <a class="wordmark" href="#top">
         <img src="assets/icon.png" alt="" />
@@ -49,15 +49,15 @@
 
   <main id="top">
     <section class="hero wrap">
-      <p class="kicker">Windows &middot; local-first &middot; your own files</p>
-      <h1>A study vault, not&nbsp;another app to babysit.</h1>
-      <p class="lede">
+      <p class="kicker" data-reveal>Windows &middot; local-first &middot; your own files</p>
+      <h1 data-reveal>A study vault, not&nbsp;another app to babysit.</h1>
+      <p class="lede" data-reveal>
         PrepOS turns a folder you already own into a timed reading room: open a PDF and the
         clock starts itself, close it and the sitting is logged &mdash; streaks, a study heatmap
         and per-prep stats built from nothing but that. Nothing is ever uploaded anywhere.
       </p>
 
-      <div class="cta-row">
+      <div class="cta-row" data-reveal>
         <a class="btn btn-primary" href="https://github.com/prajwal-priyadarshan/PrepOS/releases/latest">
           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 3v13" /><path d="M6 11l6 6 6-6" /><path d="M4 20h16" />
@@ -68,18 +68,18 @@
           View source on GitHub
         </a>
       </div>
-      <p class="fine-print">Free, open source. Windows 10/11 &middot; 64-bit.</p>
+      <p class="fine-print" data-reveal>Free, open source. Windows 10/11 &middot; 64-bit.</p>
     </section>
 
     <section class="shots wrap">
       <div class="shots-grid">
-        <div>
+        <div data-reveal>
           <div class="shot-frame">
             <img src="assets/screenshot-dashboard.png" alt="PrepOS dashboard, showing today's active time, a study heatmap and a list of prep plans" />
           </div>
           <p class="shot-caption">Every prep, one ledger &mdash; today's time kept separate from the running total.</p>
         </div>
-        <div>
+        <div data-reveal>
           <div class="shot-frame">
             <img src="assets/screenshot-workspace.png" alt="PrepOS workspace, showing the vault file tree, an open PDF, notes and a running timer" />
           </div>
@@ -89,14 +89,14 @@
     </section>
 
     <section class="section wrap">
-      <h2>What it actually does</h2>
-      <p class="section-lede">
+      <h2 data-reveal>What it actually does</h2>
+      <p class="section-lede" data-reveal>
         Nothing here is a service. There's no account, no sync server, no analytics call home &mdash;
         just a folder on your disk and an app that reads it honestly.
       </p>
 
       <div class="feature-grid">
-        <div class="feature">
+        <div class="feature" data-reveal>
           <h3>Your files stay yours</h3>
           <p>
             Point PrepOS at a folder &mdash; on your disk or synced through OneDrive &mdash; and that's
@@ -104,7 +104,7 @@
             Explorer, backed up however you already back things up.
           </p>
         </div>
-        <div class="feature">
+        <div class="feature" data-reveal>
           <h3>A timer that knows you're actually reading</h3>
           <p>
             Open a PDF and the clock starts on its own; it pauses when the window's hidden and
@@ -112,7 +112,7 @@
             window left open on a coffee break.
           </p>
         </div>
-        <div class="feature">
+        <div class="feature" data-reveal>
           <h3>Streaks, with a freeze budget</h3>
           <p>
             A qualifying day keeps the streak alive; one freeze a week bridges a bad Tuesday
@@ -120,7 +120,7 @@
             up at a glance.
           </p>
         </div>
-        <div class="feature">
+        <div class="feature" data-reveal>
           <h3>One workspace per prep</h3>
           <p>
             An exam, an interview, a certification &mdash; anything you're working toward gets its
@@ -128,7 +128,7 @@
             them from one dashboard.
           </p>
         </div>
-        <div class="feature">
+        <div class="feature" data-reveal>
           <h3>Notes pinned to the page</h3>
           <p>
             Press <kbd>n</kbd> anywhere in the reader to drop a note against the exact page you're
@@ -136,7 +136,7 @@
             open.
           </p>
         </div>
-        <div class="feature">
+        <div class="feature" data-reveal>
           <h3>Camera practice, saved straight to the vault</h3>
           <p>
             Record an intro, a speaking-section answer, a daily run-through &mdash; it streams
@@ -148,22 +148,22 @@
     </section>
 
     <section class="section wrap">
-      <h2>Installing it</h2>
-      <p class="section-lede">
+      <h2 data-reveal>Installing it</h2>
+      <p class="section-lede" data-reveal>
         One installer, no account to create. It asks once for the folder to use as your vault
         and remembers it from then on.
       </p>
 
       <div class="steps">
-        <div class="step">
+        <div class="step" data-reveal>
           <h3>Download the installer</h3>
           <p>Grab the latest <code>.exe</code> from the Download button above, or the Releases page on GitHub.</p>
         </div>
-        <div class="step">
+        <div class="step" data-reveal>
           <h3>Run it</h3>
           <p>Windows may ask you to confirm an unsigned app the first time &mdash; that's expected for a small independent build.</p>
         </div>
-        <div class="step">
+        <div class="step" data-reveal>
           <h3>Point it at a folder</h3>
           <p>Pick any folder for your vault &mdash; new or existing &mdash; and PrepOS takes it from there.</p>
         </div>
@@ -171,22 +171,22 @@
     </section>
 
     <section class="section wrap">
-      <h2>Building it yourself</h2>
-      <p class="section-lede">
+      <h2 data-reveal>Building it yourself</h2>
+      <p class="section-lede" data-reveal>
         PrepOS is a <a href="https://tauri.app" target="_blank" rel="noreferrer">Tauri</a> app &mdash;
         a React front end over a small Rust shell. If you'd rather build from source than run the
         installer:
       </p>
       <div class="steps">
-        <div class="step">
+        <div class="step" data-reveal>
           <h3>Clone &amp; install</h3>
           <p><code>git clone</code> the repo, then <code>npm install</code>.</p>
         </div>
-        <div class="step">
+        <div class="step" data-reveal>
           <h3>Build</h3>
           <p>Run <code>npm run tauri build</code>. This needs the Rust toolchain and the usual Tauri Windows prerequisites installed first.</p>
         </div>
-        <div class="step">
+        <div class="step" data-reveal>
           <h3>Install the result</h3>
           <p>The installer lands in <code>src-tauri/target/release/bundle/</code> &mdash; run it like any other.</p>
         </div>

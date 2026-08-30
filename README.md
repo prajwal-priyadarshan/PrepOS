@@ -10,6 +10,30 @@ account and no server.
 
 ![PrepOS workspace](website/assets/screenshot-workspace.png)
 
+## Use case
+
+If you're preparing for something over weeks or months — a competitive exam,
+a job interview loop, a certification, a course endsem — the material for it
+is usually a pile of PDFs and slides scattered across folders, and the actual
+proof that you're putting in the hours lives nowhere: not in a study-tracker
+app you stopped opening, not in a spreadsheet you meant to keep updating.
+
+PrepOS is built around one habit instead: **open the PDF, read, close it.**
+That alone is enough to get a logged, honest sitting — active time only, tied
+to the exact file and page — without asking you to separately "start a
+timer" or "log a session" anywhere. Do that daily and streaks, a study
+heatmap and per-prep stats fall out of it for free.
+
+It was originally built for one CAT aspirant tracking a single exam's prep;
+it's now general enough to run several unrelated preps side by side — say,
+a DBMS endsem and a job-interview loop at the same time — each with its own
+vault folder, its own deadline, its own stats, switched from one dashboard.
+
+It is **not** trying to be a note-taking app, a spaced-repetition system, or
+a flashcard tool — there are good ones of those already. It's the layer
+underneath: the vault your material already lives in, read honestly, with
+nothing asked of you except opening the file.
+
 ## What it does
 
 - **Your own vault.** Point PrepOS at a folder — local or synced through
