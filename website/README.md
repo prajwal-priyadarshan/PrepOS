@@ -1,13 +1,20 @@
 # PrepOS website
 
+<p>
+  <img alt="HTML5" src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" />
+  <img alt="CSS3" src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" />
+  <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" />
+</p>
+
 A plain static site — no build step, no framework. Just `index.html`, `styles.css`
 and `script.js`, styled with the same colour tokens as the app itself
 (`src/styles/tokens.css`), so it stays in sync by eye rather than by import.
 
 ## Adding the screenshots
 
-Drop your two screenshots into `assets/` with these exact names:
+Drop your screenshots into `assets/` with these exact names:
 
+- `assets/screenshot-welcome.png` — the pre-vault screen (the pitch and the feature grid)
 - `assets/screenshot-dashboard.png` — the dashboard (today's time, the heatmap, prep plans)
 - `assets/screenshot-workspace.png` — a prep's workspace (vault tree, reader, notes)
 

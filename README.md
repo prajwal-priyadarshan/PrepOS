@@ -10,6 +10,10 @@ account and no server.
 
 ![PrepOS workspace](website/assets/screenshot-workspace.png)
 
+*What you see before you've pointed it at a folder &mdash; no vault, no account, nothing to set up first:*
+
+![PrepOS before a vault is chosen](website/assets/screenshot-welcome.png)
+
 ## Use case
 
 If you're preparing for something over weeks or months — a competitive exam,
@@ -71,6 +75,25 @@ repository's source, not something you can run.
 
 Windows SmartScreen may flag the installer since it isn't code-signed; click
 **More info → Run anyway** to proceed.
+
+## Tech stack
+
+<p>
+  <img alt="Tauri" src="https://img.shields.io/badge/Tauri-24C8DB?style=for-the-badge&logo=tauri&logoColor=white" />
+  <img alt="Rust" src="https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white" />
+  <img alt="React" src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
+  <img alt="Vite" src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
+  <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" />
+  <img alt="Vitest" src="https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white" />
+  <img alt="Biome" src="https://img.shields.io/badge/Biome-60A5FA?style=for-the-badge&logo=biome&logoColor=white" />
+</p>
+
+A [Tauri](https://tauri.app) app: a React/TypeScript front end (Vite,
+Tailwind CSS, Zustand for state) over a small Rust shell. `react-pdf` runs the
+reader, Recharts draws the heatmap, `date-fns` handles the calendar math.
+Vitest runs the test suite and Biome does formatting and linting — no ESLint
+or Prettier in the mix.
 
 ## Building from source
 

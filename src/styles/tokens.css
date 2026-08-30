@@ -182,6 +182,19 @@
   }
 }
 
+/* A scrolling panel with its track hidden - the dashboard body, the vault
+   tree, anywhere content can run past the window. The wheel and keyboard
+   still scroll it; there's just no track drawn, matching the document-level
+   rule above so no screen in the app ever shows a scrollbar. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* The kicker: the small uppercase label that names a section without spending a
    heading on it. Used often enough, and specified tightly enough (10px, 0.12em)
    that repeating four utilities at every call site would be the real noise. */

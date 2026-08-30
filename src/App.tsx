@@ -293,7 +293,7 @@ export default function App() {
       </header>
 
       {page === 'dashboard' ? (
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto">
           <div className="px-[34px] pb-10 pt-[30px]">
             {error && (
               <p className="mb-6 border-l-2 border-flag px-3 py-2 text-sm text-ink">{error}</p>
@@ -308,7 +308,7 @@ export default function App() {
           onEndSession={endSession}
         />
       ) : (
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto">
           <div className="grid grid-cols-1 gap-x-[56px] gap-y-10 px-[34px] pb-10 pt-[30px] min-[900px]:grid-cols-[230px_1fr]">
             <aside className="flex flex-col">
               <div className="flex items-baseline justify-between gap-3">
