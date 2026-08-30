@@ -1,5 +1,6 @@
-import { formatDuration, isCounting, MAX_SESSION_MS } from '@/lib/sessionClock';
+import { formatDuration, MAX_SESSION_MS } from '@/lib/sessionClock';
 import { useSession } from '@/store/useSession';
+import { useLiveClock } from './useLiveClock';
 
 /**
  * The running clock as seen from Overview.
@@ -21,13 +22,13 @@ export function TimerHud() {
   const capNotified = useSession((s) => s.capNotified);
   const togglePause = useSession((s) => s.togglePause);
   const stop = useSession((s) => s.stop);
+  const { activeMs, counting } = useLiveClock();
 
   if (filePath === null) return null;
 
   // An external session is running in another window by definition, so the
   // hidden flag says nothing about it.
   const external = clock.external;
-  const counting = !paused && (external || (!windowHidden && isCounting(clock, Date.now())));
 
   let state = 'idle';
   if (paused) state = 'paused';
@@ -53,7 +54,7 @@ export function TimerHud() {
           ].join(' ')}
         />
         <span className="tabular whitespace-nowrap text-[13px] font-semibold leading-none">
-          {formatDuration(clock.activeMs)}
+          {formatDuration(activeMs)}
         </span>
         <span className="kicker leading-none">{state}</span>
 

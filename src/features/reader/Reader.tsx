@@ -3,11 +3,12 @@ import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import './pdfWorker';
-import { formatDuration, isCounting, MAX_SESSION_MS } from '@/lib/sessionClock';
+import { formatDuration, MAX_SESSION_MS } from '@/lib/sessionClock';
 import { useProgress } from '@/store/useProgress';
 import { useQuickNote } from '@/store/useQuickNote';
 import { useSession } from '@/store/useSession';
 import { vault } from '@/vault';
+import { useLiveClock } from './useLiveClock';
 
 interface Props {
   filePath: string;
@@ -27,13 +28,10 @@ const PAGE_SAVE_DEBOUNCE_MS = 1000;
  * was open.
  */
 function ReaderClock() {
-  const clock = useSession((s) => s.clock);
   const paused = useSession((s) => s.paused);
-  const windowHidden = useSession((s) => s.windowHidden);
   const capNotified = useSession((s) => s.capNotified);
   const togglePause = useSession((s) => s.togglePause);
-
-  const counting = !paused && (clock.external || (!windowHidden && isCounting(clock, Date.now())));
+  const { activeMs, counting } = useLiveClock();
 
   return (
     <>
@@ -51,7 +49,7 @@ function ReaderClock() {
         ].join(' ')}
       />
       <span className="tabular text-[22px] font-semibold leading-none">
-        {formatDuration(clock.activeMs)}
+        {formatDuration(activeMs)}
       </span>
       <button
         type="button"
@@ -72,8 +70,14 @@ export function Reader({ filePath, onBackToVault, onEndSession }: Props) {
 
   const [bytes, setBytes] = useState<Uint8Array | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  // Distinct from loadError: the document itself opened fine (page 1 proves
+  // that), so a blank page 400 is this page's own render failing, not the
+  // file - conflating the two would blank out the whole reader over one bad
+  // page instead of just naming which one.
+  const [pageError, setPageError] = useState<string | null>(null);
   const [pageCount, setPageCount] = useState(0);
   const [page, setPage] = useState(savedPage ?? 1);
+  const [pageInput, setPageInput] = useState<string | null>(null);
   const [showText, setShowText] = useState(false);
   const [width, setWidth] = useState(720);
 
@@ -133,6 +137,22 @@ export function Reader({ filePath, onBackToVault, onEndSession }: Props) {
     },
     [pageCount],
   );
+
+  const jumpTo = useCallback(
+    (target: number) => {
+      if (!Number.isFinite(target)) return;
+      const clamped = Math.min(Math.max(1, Math.round(target)), pageCount || target);
+      setPage(clamped);
+    },
+    [pageCount],
+  );
+
+  // A page that failed to render stops being in error the moment you leave it
+  // - staying on it is the only reason to keep showing the message.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: page drives the reset, the body just doesn't read it.
+  useEffect(() => {
+    setPageError(null);
+  }, [page]);
 
   // Debounced so paging quickly through a chapter writes once, not forty times.
   useEffect(() => {
@@ -200,9 +220,31 @@ export function Reader({ filePath, onBackToVault, onEndSession }: Props) {
             >
               &larr;
             </button>
-            <span className="tabular min-w-[92px] text-center text-[13px] text-muted">
-              page {page} / {pageCount || '–'}
-            </span>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (pageInput !== null && pageInput.trim() !== '') jumpTo(Number(pageInput));
+                setPageInput(null);
+              }}
+              className="tabular flex min-w-[92px] items-center justify-center gap-1 text-center text-[13px] text-muted"
+            >
+              page{' '}
+              <input
+                type="text"
+                inputMode="numeric"
+                value={pageInput ?? page}
+                onFocus={(e) => e.currentTarget.select()}
+                onChange={(e) => setPageInput(e.target.value)}
+                onBlur={() => {
+                  if (pageInput !== null && pageInput.trim() !== '') jumpTo(Number(pageInput));
+                  setPageInput(null);
+                }}
+                title="Jump to a page"
+                aria-label="Jump to page"
+                className="tabular w-12 rounded-sm border border-transparent bg-transparent px-1 py-0.5 text-center text-ink hover:border-divider focus:border-divider focus:outline-none"
+              />{' '}
+              / {pageCount || '–'}
+            </form>
             <button
               type="button"
               onClick={() => go(1)}
@@ -234,33 +276,28 @@ export function Reader({ filePath, onBackToVault, onEndSession }: Props) {
             error={<p className="text-sm text-flag">Could not render this PDF.</p>}
             className="flex justify-center"
           >
+            {pageError && (
+              <p className="mx-auto mb-3 max-w-md border-l-2 border-flag px-3 py-2 text-sm">
+                Page {page} would not render: {pageError}
+              </p>
+            )}
+            {/* Only the current page renders - no offscreen neighbour prefetch.
+                That used to render page+1 alongside it for snappier paging,
+                but rasterising a second page (image-heavy scans especially,
+                the kind a 1000+ page compiled book tends to be) is real
+                synchronous work on the main thread; doing it unasked on every
+                page turn was blocking input long enough that paging past
+                page 1 of a large PDF looked like it had stopped responding. */}
             <Page
+              key={page}
               pageNumber={page}
               width={width}
               renderTextLayer={showText}
               renderAnnotationLayer={false}
+              onLoadError={(err) => setPageError(err.message)}
+              onRenderError={(err) => setPageError(err.message)}
               className="border border-divider"
             />
-            {/* Neighbours rendered offscreen so paging feels instant. Never all
-                pages - a 400-page quant book would freeze the window. */}
-            <div className="hidden">
-              {page > 1 && (
-                <Page
-                  pageNumber={page - 1}
-                  width={width}
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                />
-              )}
-              {pageCount > page && (
-                <Page
-                  pageNumber={page + 1}
-                  width={width}
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                />
-              )}
-            </div>
           </Document>
         )}
       </div>

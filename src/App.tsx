@@ -203,10 +203,9 @@ export default function App() {
   const readerReady = openPdf !== null || firstPdf(prepTree) !== null;
 
   const tab = (active: boolean) =>
-    [
-      'text-[13.5px] transition-colors',
-      active ? 'text-accent underline underline-offset-4' : 'text-ink hover:text-accent',
-    ].join(' ');
+    ['text-[13.5px] transition-colors', active ? 'text-accent' : 'text-ink hover:text-accent'].join(
+      ' ',
+    );
 
   return (
     <div className="flex h-screen flex-col bg-paper text-ink">

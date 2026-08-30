@@ -7,7 +7,6 @@ import {
   type ClockState,
   createClock,
   hasHitCap,
-  isCounting,
   onActivity,
   onVisibility,
 } from '@/lib/sessionClock';
@@ -150,14 +149,17 @@ export const useSession = create<SessionState>((set, get) => {
     },
 
     activity() {
-      const { filePath, clock, paused, windowHidden } = get();
-      if (filePath === null || paused || windowHidden) return;
-      if (isCounting(clock, now())) {
-        // Cheap path: already counting, just refresh the activity stamp.
-        set({ clock: onActivity(clock, now()) });
-        return;
-      }
-      set({ clock: onActivity(clock, now()) });
+      const { filePath, paused, windowHidden } = get();
+      if (filePath === null || paused) return;
+      // Real pointer/keyboard/scroll input reaching this window is proof it
+      // isn't actually hidden, even if a stray or stuck visibilitychange event
+      // said otherwise - WebView2 has been seen reporting a window hidden
+      // while it's plainly in front of you and being used. Without this, that
+      // one wrong event freezes the clock for the rest of the sitting: every
+      // later activity() call bails out on windowHidden before it ever gets a
+      // chance to correct it.
+      if (windowHidden) get().setWindowHidden(false);
+      set({ clock: onActivity(get().clock, now()) });
     },
 
     setWindowHidden(hidden) {

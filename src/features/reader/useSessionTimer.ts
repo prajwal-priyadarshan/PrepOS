@@ -24,6 +24,11 @@ export function useSessionTimer(): void {
       useSession.getState().setWindowHidden(document.visibilityState === 'hidden');
     };
 
+    // Belt and braces alongside activity()'s self-correction: gaining focus
+    // is undeniable proof the window is visible, so clear a stuck-hidden flag
+    // even before the next pointer/keyboard/scroll event does.
+    const focus = () => useSession.getState().setWindowHidden(false);
+
     // 't' toggles the timer (plan S6.1). Reader owns arrows and Escape.
     const shortcut = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
@@ -39,6 +44,7 @@ export function useSessionTimer(): void {
     window.addEventListener('wheel', activity, { passive: true });
     document.addEventListener('visibilitychange', visibility);
     window.addEventListener('keydown', shortcut);
+    window.addEventListener('focus', focus);
 
     return () => {
       clearInterval(tick);
@@ -48,6 +54,7 @@ export function useSessionTimer(): void {
       window.removeEventListener('wheel', activity);
       window.removeEventListener('keydown', shortcut);
       document.removeEventListener('visibilitychange', visibility);
+      window.removeEventListener('focus', focus);
     };
   }, []);
 }
