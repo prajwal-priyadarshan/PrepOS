@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PrepOS &mdash; a study vault, not another app to babysit</title>
+  <meta
+    name="description"
+    content="PrepOS is a local-first study companion for exams, interviews and certifications: a timed PDF reader, streaks, a study heatmap, quick notes and camera practice, all reading straight from a folder you already own."
+  />
+  <link rel="icon" href="assets/icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600;7..72,700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Stamped before paint, the same way the app's own useTheme does it -
+       so the page never flashes light before switching to dark. -->
+  <script>
+    (() => {
+      var saved = null;
+      try {
+        saved = localStorage.getItem('prepos-site-theme');
+      } catch (_e) {}
+      if (saved === 'light' || saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+    })();
+  </script>
+</head>
+<body>
+  <header class="site">
+    <div class="wrap site-head">
+      <a class="wordmark" href="#top">
+        <img src="assets/icon.png" alt="" />
+        PrepOS
+      </a>
+      <button class="theme-toggle" id="theme-toggle" type="button" title="Toggle theme" aria-label="Toggle theme">
+        <svg id="theme-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <circle cx="12" cy="12" r="4.5" />
+          <path d="M12 2.5v2.2M12 19.3v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6" />
+        </svg>
+      </button>
+    </div>
+    <div class="wrap"><div class="rule"></div></div>
+  </header>
+
+  <main id="top">
+    <section class="hero wrap">
+      <p class="kicker">Windows &middot; local-first &middot; your own files</p>
+      <h1>A study vault, not&nbsp;another app to babysit.</h1>
+      <p class="lede">
+        PrepOS turns a folder you already own into a timed reading room: open a PDF and the
+        clock starts itself, close it and the sitting is logged &mdash; streaks, a study heatmap
+        and per-prep stats built from nothing but that. Nothing is ever uploaded anywhere.
+      </p>
+
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/prajwal-priyadarshan/PrepOS/releases/latest">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v13" /><path d="M6 11l6 6 6-6" /><path d="M4 20h16" />
+          </svg>
+          Download for Windows
+        </a>
+        <a class="btn btn-secondary" href="https://github.com/prajwal-priyadarshan/PrepOS">
+          View source on GitHub
+        </a>
+      </div>
+      <p class="fine-print">Free, open source. Windows 10/11 &middot; 64-bit.</p>
+    </section>
+
+    <section class="shots wrap">
+      <div class="shots-grid">
+        <div>
+          <div class="shot-frame">
+            <img src="assets/screenshot-dashboard.png" alt="PrepOS dashboard, showing today's active time, a study heatmap and a list of prep plans" />
+          </div>
+          <p class="shot-caption">Every prep, one ledger &mdash; today's time kept separate from the running total.</p>
+        </div>
+        <div>
+          <div class="shot-frame">
+            <img src="assets/screenshot-workspace.png" alt="PrepOS workspace, showing the vault file tree, an open PDF, notes and a running timer" />
+          </div>
+          <p class="shot-caption">A prep's own workspace: vault, timed reader, notes and camera practice, together.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section wrap">
+      <h2>What it actually does</h2>
+      <p class="section-lede">
+        Nothing here is a service. There's no account, no sync server, no analytics call home &mdash;
+        just a folder on your disk and an app that reads it honestly.
+      </p>
+
+      <div class="feature-grid">
+        <div class="feature">
+          <h3>Your files stay yours</h3>
+          <p>
+            Point PrepOS at a folder &mdash; on your disk or synced through OneDrive &mdash; and that's
+            the whole vault. PDFs, slides, recordings, notes: all plain files you can see in
+            Explorer, backed up however you already back things up.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>A timer that knows you're actually reading</h3>
+          <p>
+            Open a PDF and the clock starts on its own; it pauses when the window's hidden and
+            when you've gone idle, so the number is honest active time, not wall time with the
+            window left open on a coffee break.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>Streaks, with a freeze budget</h3>
+          <p>
+            A qualifying day keeps the streak alive; one freeze a week bridges a bad Tuesday
+            without pretending it didn't happen. A GitHub-style heatmap shows a year of showing
+            up at a glance.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>One workspace per prep</h3>
+          <p>
+            An exam, an interview, a certification &mdash; anything you're working toward gets its
+            own folder, its own stats, and optionally its own deadline countdown. Switch between
+            them from one dashboard.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>Notes pinned to the page</h3>
+          <p>
+            Press <kbd>n</kbd> anywhere in the reader to drop a note against the exact page you're
+            on &mdash; kept with the session, not scattered across a separate app you'll forget to
+            open.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>Camera practice, saved straight to the vault</h3>
+          <p>
+            Record an intro, a speaking-section answer, a daily run-through &mdash; it streams
+            straight to disk inside that prep's own folder, not to a temp file somewhere you'll
+            lose track of.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section wrap">
+      <h2>Installing it</h2>
+      <p class="section-lede">
+        One installer, no account to create. It asks once for the folder to use as your vault
+        and remembers it from then on.
+      </p>
+
+      <div class="steps">
+        <div class="step">
+          <h3>Download the installer</h3>
+          <p>Grab the latest <code>.exe</code> from the Download button above, or the Releases page on GitHub.</p>
+        </div>
+        <div class="step">
+          <h3>Run it</h3>
+          <p>Windows may ask you to confirm an unsigned app the first time &mdash; that's expected for a small independent build.</p>
+        </div>
+        <div class="step">
+          <h3>Point it at a folder</h3>
+          <p>Pick any folder for your vault &mdash; new or existing &mdash; and PrepOS takes it from there.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section wrap">
+      <h2>Building it yourself</h2>
+      <p class="section-lede">
+        PrepOS is a <a href="https://tauri.app" target="_blank" rel="noreferrer">Tauri</a> app &mdash;
+        a React front end over a small Rust shell. If you'd rather build from source than run the
+        installer:
+      </p>
+      <div class="steps">
+        <div class="step">
+          <h3>Clone &amp; install</h3>
+          <p><code>git clone</code> the repo, then <code>npm install</code>.</p>
+        </div>
+        <div class="step">
+          <h3>Build</h3>
+          <p>Run <code>npm run tauri build</code>. This needs the Rust toolchain and the usual Tauri Windows prerequisites installed first.</p>
+        </div>
+        <div class="step">
+          <h3>Install the result</h3>
+          <p>The installer lands in <code>src-tauri/target/release/bundle/</code> &mdash; run it like any other.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site wrap">
+    <span>PrepOS is free and open source.</span>
+    <span class="links">
+      <a href="https://github.com/prajwal-priyadarshan/PrepOS">GitHub</a>
+      <a href="https://github.com/prajwal-priyadarshan/PrepOS/releases/latest">Releases</a>
+      <a href="https://github.com/prajwal-priyadarshan/PrepOS/issues">Report an issue</a>
+    </span>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
