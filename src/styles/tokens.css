@@ -131,6 +131,24 @@
     min-height: 100vh;
   }
 
+  /* The document itself never scrolls - every screen that can overflow (the
+     dashboard's panels, the file tree, the reader) manages its own overflow-y
+     internally, so a scrollbar on the window edge is never doing real work.
+     Hidden here rather than by clipping content: the page still scrolls with
+     the wheel or keyboard if something briefly overflows, there's just no
+     track drawn for it. Panels that DO need a visible scrollbar keep the
+     themed native one from color-scheme above - this rule stops at html/body. */
+  html,
+  body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
   /* Every number in this app is a figure you compare against another figure. */
   .tabular,
   code,

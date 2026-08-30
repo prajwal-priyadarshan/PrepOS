@@ -37,8 +37,8 @@ nothing asked of you except opening the file.
 ## What it does
 
 - **Your own vault.** Point PrepOS at a folder — local or synced through
-  OneDrive — and that's the whole vault. Every file it manages is a plain
-  file you can see in Explorer.
+  OneDrive, empty or already full of PDFs — and that's the whole vault. Every
+  file it manages is a plain file you can see in Explorer.
 - **A timer that knows you're reading.** Open a PDF and the clock starts on
   its own; it pauses when the window is hidden or you've gone idle, so the
   logged time is active reading time, not "window left open."
@@ -58,10 +58,19 @@ nothing asked of you except opening the file.
 
 ## Installing
 
-Download the Windows installer from the
-[latest release](https://github.com/prajwal-priyadarshan/PrepOS/releases/latest)
-and run it. That's it — no account, no setup wizard. The first launch asks
-for a folder to use as your vault and remembers it after that.
+Go to the [latest release](https://github.com/prajwal-priyadarshan/PrepOS/releases/latest)
+and, under **Assets**, download `PrepOS_<version>_x64-setup.exe` (or the `.msi`
+if you prefer Windows' own installer format). Run it — that's it, no account,
+no setup wizard. The first launch asks for a folder to use as your vault and
+remembers it after that — a brand-new empty folder works fine, there's
+nothing to set up in it first; you can add PDFs from inside the app
+afterwards.
+
+Don't use the "Source code (zip)" link near the bottom of Assets — that's the
+repository's source, not something you can run.
+
+Windows SmartScreen may flag the installer since it isn't code-signed; click
+**More info → Run anyway** to proceed.
 
 ## Building from source
 
